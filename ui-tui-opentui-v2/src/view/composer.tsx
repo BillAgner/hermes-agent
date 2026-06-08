@@ -11,6 +11,13 @@
  * (so live-refine-by-typing works), so we use Tab to accept the top match and Esc
  * to dismiss (arrow-nav would fight the textarea's cursor; a polish item).
  * `onSubmit`/`onType` are plain callbacks wired by the entry — no Effect here.
+ *
+ * Always-active input (item 2): the textarea focuses on mount, on click
+ * (onMouseDown), and reclaims focus on the next PRINTABLE keystroke if focus ever
+ * drifted off (e.g. the transcript scrollbox grabbed it on a mouse-scroll). Nav
+ * keys are left alone so keyboard transcript-scroll still works (opencode keeps
+ * the prompt focused via a reactive effect; here a keystroke net is enough since
+ * the composer remounts+refocuses whenever an overlay closes).
  */
 import { type TextareaRenderable } from '@opentui/core'
 import { useKeyboard } from '@opentui/solid'
@@ -18,6 +25,50 @@ import { For, onMount, Show } from 'solid-js'
 
 import type { CompletionItem } from '../logic/store.ts'
 import { useTheme } from './theme.tsx'
+
+/** Keys that must NOT steal focus back to the composer (scroll/edit/nav). */
+const NAV_KEYS = new Set([
+  'return',
+  'linefeed',
+  'tab',
+  'escape',
+  'backspace',
+  'delete',
+  'insert',
+  'up',
+  'down',
+  'left',
+  'right',
+  'home',
+  'end',
+  'pageup',
+  'pagedown',
+  'clear',
+  'menu'
+])
+
+/** A printable, unmodified key press (recoverable into the textarea). */
+function isPrintableKey(k: {
+  name: string
+  ctrl: boolean
+  meta: boolean
+  option: boolean
+  super?: boolean
+  sequence: string
+  eventType?: string
+}): boolean {
+  return (
+    k.eventType !== 'release' &&
+    !k.ctrl &&
+    !k.meta &&
+    !k.option &&
+    !k.super &&
+    !NAV_KEYS.has(k.name) &&
+    typeof k.sequence === 'string' &&
+    k.sequence.length >= 1 &&
+    (k.sequence.codePointAt(0) ?? 0) >= 0x20
+  )
+}
 
 export function Composer(props: {
   onSubmit: (text: string) => void
@@ -41,19 +92,29 @@ export function Composer(props: {
     submitting = false
   }
 
-  // Tab accepts the top completion; Esc dismisses the dropdown. Only act while the
-  // dropdown is open so normal Tab/Esc behaviour is unaffected otherwise.
   useKeyboard(key => {
-    if (completions().length === 0) return
-    if (key.name === 'tab') {
-      const top = completions()[0]
-      if (top && ta) {
-        ta.clear()
-        ta.insertText(top.text + ' ')
-        props.onDismiss?.()
+    // 1) completion accept (Tab) / dismiss (Esc) while the dropdown is open
+    if (completions().length > 0) {
+      if (key.name === 'tab') {
+        const top = completions()[0]
+        if (top && ta) {
+          ta.clear()
+          ta.insertText(top.text + ' ')
+          props.onDismiss?.()
+        }
+        return
       }
-    } else if (key.name === 'escape') {
-      props.onDismiss?.()
+      if (key.name === 'escape') {
+        props.onDismiss?.()
+        return
+      }
+    }
+    // 2) always-active input (item 2): a printable key while the textarea lost
+    // focus reclaims it AND recovers the char (the in-flight event went to this
+    // global handler, not the unfocused textarea). Nav/scroll keys are untouched.
+    if (ta && !ta.focused && isPrintableKey(key)) {
+      ta.focus()
+      ta.insertText(key.sequence)
     }
   })
 
@@ -90,6 +151,7 @@ export function Composer(props: {
         cursorColor={theme().color.accent}
         focusedBackgroundColor={theme().color.statusBg}
         keyBindings={[{ action: 'submit', name: 'return' }]}
+        onMouseDown={() => ta?.focus()}
         onSubmit={submit}
         onContentChange={() => props.onType?.(ta?.plainText ?? '')}
       />
