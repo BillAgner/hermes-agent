@@ -101,7 +101,7 @@ def test_step_up_requests_billing_scope_and_reuses_prior_urls(monkeypatch, _stub
 
 
 def test_step_up_returns_false_when_downscoped(monkeypatch, _stub_persist):
-    # Non-admin / unticked → NAS silently downscopes; token comes back WITHOUT scope.
+    # Non-admin / unticked → the server silently downscopes; token comes back WITHOUT scope.
     monkeypatch.setattr(auth, "get_provider_auth_state", lambda p: {"scope": "inference:invoke"})
     monkeypatch.setattr(
         auth,

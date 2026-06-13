@@ -20,7 +20,7 @@ Design rules (see docs/plans/2026-06-13-001-phase-2b-terminal-billing-tui-plan.m
 - **Portal base URL** resolves with the same precedence as the device-flow login
   (``auth.py``): ``HERMES_PORTAL_BASE_URL`` → ``NOUS_PORTAL_BASE_URL`` → the
   stored auth-state ``portal_base_url`` → the registry default. This is how the
-  E2E run points the client at the PR #412 preview with zero code change.
+  E2E run points the client at a preview deployment with zero code change.
 """
 
 from __future__ import annotations

@@ -4902,7 +4902,7 @@ def _(rid, params: dict) -> dict:
     """Run the lazy billing:manage step-up device flow → {ok, granted}.
 
     Triggered by the TUI after a billing call returns error=insufficient_scope.
-    Returns granted:false when NAS silently downscopes (non-admin / unticked).
+    Returns granted:false when the server silently downscopes (non-admin / unticked).
     """
     try:
         from hermes_cli.auth import step_up_nous_billing_scope
