@@ -1379,12 +1379,29 @@ class GatewayStreamConsumer:
                     # finalizing through edit would visibly downgrade a rich
                     # preview, so re-deliver as a fresh message + delete the
                     # preview instead.
+                    #
+                    # The fresh-final path is only safe when there is exactly
+                    # ONE preview message to delete.  When the streaming path
+                    # has already split the reply across multiple previews
+                    # (path-1 truncate_message + _send_new_chunk or
+                    # path-2's split-and-edit _edit_overflow_split), a
+                    # fresh-final would re-send content that's already on
+                    # screen AND rely on multiple best-effort deleteMessage
+                    # calls — if any single delete silently fails (Telegram
+                    # rate limit, transient network, message >48h on retry),
+                    # the user sees the original chunks PLUS a duplicate
+                    # fresh-final, i.e. the full content delivered twice.
+                    # Skip the fresh-final path in that case; the chunks
+                    # ARE the final delivery, and the in-place edit path
+                    # can still apply the finalize formatting to the
+                    # last continuation.
                     if (
                         finalize
                         and (
                             self._should_send_fresh_final()
                             or self._adapter_prefers_fresh_final(text)
                         )
+                        and len(self._preview_message_ids) <= 1
                         and await self._try_fresh_final(
                             text, is_turn_final=is_turn_final,
                         )

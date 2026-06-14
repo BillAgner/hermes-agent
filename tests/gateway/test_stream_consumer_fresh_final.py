@@ -663,3 +663,197 @@ class TestTelegramAdapterDeleteMessage:
         import inspect
         sig = inspect.signature(BasePlatformAdapter.delete_message)
         assert list(sig.parameters)[:3] == ["self", "chat_id", "message_id"]
+
+
+class TestTelegramFreshFinalDoesNotDuplicateChunkedDelivery:
+    """Regression: a streamed reply that overflows MAX_MESSAGE_LENGTH must NOT
+    also be re-delivered as a fresh-final Telegram message.
+
+    When a long reply streams past the platform's edit cap, the consumer
+    splits it via the split-and-edit loop (``_send_or_edit`` with a chunk
+    that overflows the platform's edit limit). The platform adapter then
+    delivers the chunk + a continuation as a new message, and the consumer
+    adopts that continuation as the current preview.
+
+    For Telegram, ``prefers_fresh_final_streaming`` returns True (so the
+    consumer's ``_send_or_edit`` takes the fresh-final path on any
+    ``finalize=True`` call).  Path 2 calls ``_send_or_edit`` with
+    ``finalize=True``, which triggers ``_try_fresh_final``: it sends a
+    brand-new message and best-effort deletes the preview.  Then the
+    live-edit finalize (line 585) also fires ``_try_fresh_final`` with the
+    remaining text, sending another brand-new message and trying to delete
+    the previous one.  When Telegram's ``deleteMessage`` fails (rate
+    limit, transient error, message too old), the user sees the original
+    progressive edit PLUS the new fresh-final messages — the full content
+    delivered twice.
+
+    The fix: when the consumer has already split content across multiple
+    preview messages, do NOT take the fresh-final path.  The chunks ARE
+    the final delivery; sending another message would duplicate content
+    that is already on screen.
+    """
+
+    def _telegram_like_adapter(
+        self, *, delete_fails: bool = True, max_message_length: int = 4096,
+    ) -> MagicMock:
+        """Build an adapter that mimics Telegram's fresh-final preference
+        AND its ``delete_message`` failure mode (best-effort, can return
+        False silently when Telegram rejects the delete)."""
+        adapter = MagicMock()
+        adapter.REQUIRES_EDIT_FINALIZE = True
+        adapter.MAX_MESSAGE_LENGTH = max_message_length
+        # Every send returns a NEW unique id so the chunked-delivery
+        # path actually produces multiple tracked previews (a single
+        # shared id would collapse the set to size 1 and hide the bug).
+        _send_id_counter = {"n": 0}
+        def _next_send_id(*_a, **_kw):
+            _send_id_counter["n"] += 1
+            return SimpleNamespace(
+                success=True, message_id=f"m{_send_id_counter['n']}",
+                continuation_message_ids=(),
+            )
+        adapter.send = AsyncMock(side_effect=_next_send_id)
+        adapter.edit_message = AsyncMock(side_effect=_next_send_id)
+        # Realistic truncate_message: split text into <=limit pieces on
+        # whitespace boundaries, with (1/2) (2/2) chunk indicators.
+        def _truncate(text, limit, len_fn=None):
+            chunks = []
+            while text:
+                if len(text) <= limit:
+                    chunks.append(text)
+                    break
+                # Split at the last whitespace before the limit.
+                split_at = text.rfind(" ", 0, limit)
+                if split_at <= 0:
+                    split_at = limit
+                chunks.append(text[:split_at])
+                text = text[split_at:].lstrip()
+            return chunks
+        adapter.truncate_message = MagicMock(side_effect=_truncate)
+        if delete_fails:
+            # Simulate the realistic failure mode: Telegram's delete
+            # sometimes silently fails (rate limit, network blip, or
+            # message >48h old on retries).  The fresh-final cleanup is
+            # best-effort, so the chunks stay on screen.
+            adapter.delete_message = AsyncMock(return_value=False)
+        else:
+            adapter.delete_message = AsyncMock(return_value=True)
+        # Telegram's fresh-final preference: any rich-eligible content.
+        # Returning True is the trigger that, combined with the chunked
+        # delivery, causes the duplication bug.
+        adapter.prefers_fresh_final_streaming = MagicMock(return_value=True)
+        return adapter
+
+    @pytest.mark.asyncio
+    async def test_overflow_chunks_are_not_duplicated_by_fresh_final(self):
+        """Stream a reply that overflows the platform cap; verify the full
+        content does NOT appear on screen more than once.
+
+        Reproduces the split-and-edit path that fires when a streamed
+        reply exceeds the platform's edit cap.  With a Telegram-like
+        adapter (prefers_fresh_final_streaming=True, delete_fails=True),
+        the bug manifests as: a fresh-final ``send`` is triggered that
+        duplicates content already on screen as a preview message.
+        """
+        adapter = self._telegram_like_adapter(
+            delete_fails=True, max_message_length=200,
+        )
+        # Build a long text that will overflow 200 chars: ~720 chars
+        # broken on word boundaries.
+        words = [f"word{i:03d}" for i in range(80)]
+        long_text = " ".join(words)  # ~720 chars
+
+        consumer = GatewayStreamConsumer(
+            adapter=adapter,
+            chat_id="chat",
+            config=StreamConsumerConfig(
+                edit_interval=0.01, buffer_threshold=5, cursor="",
+            ),
+        )
+        # Set up the consumer to look like a real post-chunked-delivery
+        # state: multiple preview messages are on screen (the streaming
+        # path's path-1 / path-2 split-and-deliver produced a chain of
+        # messages), and the accumulated text matches what's already
+        # visible in the last preview.  The next
+        # ``_send_or_edit(..., finalize=True)`` call would normally
+        # trigger the fresh-final path, but the fix says: if multiple
+        # previews exist, the fresh-final path is unsafe (best-effort
+        # deletes of multiple messages can silently fail, leaving the
+        # user with the original chunks PLUS a duplicate fresh-final).
+        consumer._message_id = "m_chunk_last"
+        consumer._preview_message_ids = {"m_chunk_1", "m_chunk_2", "m_chunk_last"}
+        consumer._accumulated = long_text
+        consumer._last_sent_text = long_text  # already on screen
+
+        # Simulate the consumer's split-and-edit finalize (line 585):
+        # ``_send_or_edit(display_text, finalize=got_done, is_turn_final=got_done)``
+        # With the bug, the fresh-final check fires (because the
+        # adapter prefers fresh final), delivering long_text as a
+        # brand-new message AND trying to delete ALL previews.  With
+        # delete_fails=True, the user sees BOTH the chunks AND the
+        # fresh-final — the full content delivered twice.
+        result = await consumer._send_or_edit(
+            long_text, finalize=True, is_turn_final=True,
+        )
+        assert result is True, "the consumer's send-or-edit should succeed"
+
+        # The fix: skip the fresh-final path when multiple previews
+        # exist.  The chunks ARE the final delivery; sending another
+        # message would duplicate content that's already on screen.
+        assert adapter.send.call_count == 0, (
+            f"the fresh-final path should NOT fire when multiple "
+            f"previews exist (chunked delivery already on screen) — "
+            f"got {adapter.send.call_count} new sends.  Each new send "
+            f"with overlapping content is a duplication bug.  sends="
+            f"{[c.kwargs.get('content','')[:60] for c in adapter.send.call_args_list]}"
+        )
+
+    @pytest.mark.asyncio
+    async def test_overflow_path2_split_also_does_not_duplicate(self):
+        """Same bug, exercised from the path-2 split-and-edit loop's
+        ``_send_or_edit(chunk, finalize=True, is_turn_final=False)`` call.
+
+        Path 2 also passes ``finalize=True`` (it carries the finalize
+        signal forward to the adapter), and ``_adapter_prefers_fresh_final``
+        fires for that too — sending a new message per chunk while the
+        content is already on screen via the progressive edit.
+        """
+        adapter = self._telegram_like_adapter(
+            delete_fails=True, max_message_length=200,
+        )
+        words = [f"word{i:03d}" for i in range(80)]
+        long_text = " ".join(words)
+
+        consumer = GatewayStreamConsumer(
+            adapter=adapter,
+            chat_id="chat",
+            config=StreamConsumerConfig(
+                edit_interval=0.01, buffer_threshold=5, cursor="",
+            ),
+        )
+        # Mid-stream state: path 2 has split the content into multiple
+        # preview messages (the chunked delivery).  The next iteration
+        # of the split-and-edit loop calls
+        # ``_send_or_edit(chunk, finalize=True, is_turn_final=False)``
+        # which would otherwise trigger the fresh-final path.
+        consumer._message_id = "m_chunk_last"
+        consumer._preview_message_ids = {"m_chunk_1", "m_chunk_2", "m_chunk_last"}
+        consumer._accumulated = long_text
+        consumer._last_sent_text = long_text  # already on screen
+
+        # Path 2 calls ``_send_or_edit(chunk, finalize=True,
+        # is_turn_final=False)`` to carry the finalize signal to the
+        # adapter.  The fresh-final check fires regardless of
+        # is_turn_final, sending a brand-new message.
+        chunk = long_text[:150]  # within MAX_MESSAGE_LENGTH
+        result = await consumer._send_or_edit(
+            chunk, finalize=True, is_turn_final=False,
+        )
+        assert result is True
+
+        assert adapter.send.call_count == 0, (
+            f"path 2's split-and-edit should not re-send content as a "
+            f"fresh message when multiple previews are already on "
+            f"screen.  got {adapter.send.call_count} sends.  sends="
+            f"{[c.kwargs.get('content','')[:60] for c in adapter.send.call_args_list]}"
+        )
