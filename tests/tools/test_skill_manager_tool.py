@@ -702,6 +702,100 @@ class TestSecurityScanGate:
                 assert _guard_agent_created_enabled() is True, \
                     f"guard_agent_created={quoted!r} must coerce to True"
 
+    # -- guard_allowlist: per-skill bypass --
+
+    def test_guard_allowlist_reads_list_config(self):
+        """_guard_allowlist returns the list from skills.guard_allowlist config."""
+        from tools.skill_manager_tool import _guard_allowlist
+
+        with patch("hermes_cli.config.load_config",
+                   return_value={"skills": {"guard_allowlist": ["model-router", "my-skill"]}}):
+            assert _guard_allowlist() == ["model-router", "my-skill"]
+
+    def test_guard_allowlist_reads_comma_string_config(self):
+        """Comma-separated string is split into a list."""
+        from tools.skill_manager_tool import _guard_allowlist
+
+        with patch("hermes_cli.config.load_config",
+                   return_value={"skills": {"guard_allowlist": "model-router, my-skill"}}):
+            assert _guard_allowlist() == ["model-router", "my-skill"]
+
+    def test_guard_allowlist_defaults_empty(self):
+        """Missing config returns empty list."""
+        from tools.skill_manager_tool import _guard_allowlist
+
+        with patch("hermes_cli.config.load_config", return_value={"skills": {}}):
+            assert _guard_allowlist() == []
+        with patch("hermes_cli.config.load_config", side_effect=RuntimeError("boom")):
+            assert _guard_allowlist() == []
+
+    def test_scan_bypassed_for_allowlisted_skill(self, tmp_path):
+        """A skill in the allowlist has its block decision suppressed even when
+        the scan verdict is dangerous. The scan still runs (auditable)."""
+        from tools.skill_manager_tool import _security_scan_skill
+        from tools.skills_guard import ScanResult, Finding
+
+        # Fake a dangerous scan result
+        finding = Finding(
+            "env_exfil_curl", "critical", "exfiltration", "SKILL.md", 1,
+            "curl $TOKEN", "exfiltration",
+        )
+        fake_result = ScanResult(
+            skill_name="model-router",
+            source="agent-created",
+            trust_level="agent-created",
+            verdict="dangerous",
+            findings=[finding],
+            summary="would-block",
+        )
+        # The skill dir name is "model-router" — must match the allowlist
+        skill_dir = tmp_path / "model-router"
+        skill_dir.mkdir()
+        (skill_dir / "SKILL.md").write_text("---\nname: model-router\n---\n")
+
+        with patch("tools.skill_manager_tool._guard_agent_created_enabled", return_value=True), \
+             patch("tools.skill_manager_tool._guard_allowlist", return_value=["model-router"]), \
+             patch("tools.skill_manager_tool.scan_skill", return_value=fake_result) as mock_scan:
+            result = _security_scan_skill(skill_dir)
+
+        # No block — allowlisted
+        assert result is None, (
+            f"Allowlisted skill should be allowed even with dangerous verdict; "
+            f"got: {result!r}"
+        )
+        # Scan still ran (auditable)
+        mock_scan.assert_called_once()
+
+    def test_scan_still_blocks_for_non_allowlisted_skill(self, tmp_path):
+        """A skill NOT in the allowlist still gets blocked on dangerous verdict."""
+        from tools.skill_manager_tool import _security_scan_skill
+        from tools.skills_guard import ScanResult, Finding
+
+        finding = Finding(
+            "env_exfil_curl", "critical", "exfiltration", "SKILL.md", 1,
+            "curl $TOKEN", "exfiltration",
+        )
+        fake_result = ScanResult(
+            skill_name="some-other-skill",
+            source="agent-created",
+            trust_level="agent-created",
+            verdict="dangerous",
+            findings=[finding],
+            summary="would-block",
+        )
+        skill_dir = tmp_path / "some-other-skill"
+        skill_dir.mkdir()
+        (skill_dir / "SKILL.md").write_text("---\nname: some-other-skill\n---\n")
+
+        with patch("tools.skill_manager_tool._guard_agent_created_enabled", return_value=True), \
+             patch("tools.skill_manager_tool._guard_allowlist", return_value=["model-router"]), \
+             patch("tools.skill_manager_tool.scan_skill", return_value=fake_result):
+            result = _security_scan_skill(skill_dir)
+
+        # Blocked — not in allowlist
+        assert result is not None
+        assert "Security scan blocked" in result
+
 
 # ---------------------------------------------------------------------------
 # External skills directories (skills.external_dirs) — mutations in place

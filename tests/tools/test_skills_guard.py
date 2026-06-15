@@ -30,6 +30,7 @@ from tools.skills_guard import (
     _determine_verdict,
     _resolve_trust_level,
     _check_structure,
+    _detect_skill_domain,
     _unicode_char_name,
     _load_skill_ignore,
     MAX_FILE_COUNT,
@@ -230,6 +231,217 @@ class TestShouldAllowInstall:
         )
         assert allowed is True
         assert "Force-installed" in reason
+
+
+# ---------------------------------------------------------------------------
+# Security-domain detection (regression: agent-created security-audit
+# skills contain vocabulary the guard scans for as instructional material
+# and should not be blocked).
+# ---------------------------------------------------------------------------
+
+
+class TestSecurityDomainDetection:
+    """Security-domain skills (security audit, hardening, posture check,
+    compliance) contain the very patterns the guard scans for — env file
+    paths, user enumeration commands, `git ls-files | grep secrets`,
+    "watch for third-party API calls" — as *instructional* references for
+    the auditor. They are expected false-positive sources. These tests
+    pin the detector and the policy branch that downgrades them.
+    """
+
+    # -- _detect_skill_domain --
+
+    def test_detects_security_audit_keyword(self, tmp_path):
+        skill = tmp_path / "ai-agent-security-audit"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            "name: ai-agent-security-audit\n"
+            'description: "Class-level security audit of a local AI agent. '
+            '9-phase methodology with concrete fix commands."\n'
+            "platforms: [linux, macos, windows]\n"
+            "---\n"
+            "\n# Body\n"
+        )
+        assert _detect_skill_domain(skill) == "security-audit"
+
+    def test_detects_hardening_phrase(self, tmp_path):
+        skill = tmp_path / "win-hardening"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            'description: "Windows security hardening baseline for agent data dirs."\n'
+            "---\n"
+        )
+        assert _detect_skill_domain(skill) == "security-audit"
+
+    def test_detects_cis_benchmark(self, tmp_path):
+        skill = tmp_path / "cis-baseline"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            'description: "Apply CIS benchmark controls to a Windows host."\n'
+            "---\n"
+        )
+        assert _detect_skill_domain(skill) == "security-audit"
+
+    def test_no_keyword_returns_general(self, tmp_path):
+        skill = tmp_path / "kanban-builder"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            'description: "Build a kanban board from a project spec."\n'
+            "---\n"
+        )
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_bare_audit_word_returns_general(self, tmp_path):
+        # A financial/DB "audit" must not be classified as security-audit.
+        skill = tmp_path / "db-audit-log"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            'description: "Stream PostgreSQL audit events to a SIEM."\n'
+            "---\n"
+        )
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_missing_skill_md_returns_general(self, tmp_path):
+        skill = tmp_path / "no-skill-md"
+        skill.mkdir()
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_malformed_frontmatter_returns_general(self, tmp_path):
+        skill = tmp_path / "malformed"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text("# No frontmatter at all\n")
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_unclosed_frontmatter_returns_general(self, tmp_path):
+        skill = tmp_path / "unclosed"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            'description: "security audit of something"\n'
+            # no closing ---
+        )
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_unreadable_skill_md_returns_general(self, tmp_path, monkeypatch):
+        # Simulate OSError on read_text — should fail-open to "general"
+        # so the existing "ask" path still applies.
+        from pathlib import Path as _Path
+
+        skill = tmp_path / "io-error"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text("---\ndescription: security audit\n---\n")
+
+        def boom(*a, **kw):
+            raise OSError("simulated")
+
+        monkeypatch.setattr(_Path, "read_text", boom)
+        assert _detect_skill_domain(skill) == "general"
+
+    def test_security_audit_domain_downgrades_agent_created_dangerous(self):
+        """Primary regression test: a security-audit skill with vocabulary
+        matches gets allowed even when scan verdict is dangerous. This is
+        the exact case that blocked ai-agent-security-audit."""
+        findings = [
+            Finding("hermes_env_access", "critical", "exfiltration", "SKILL.md", 61,
+                    "~/.hermes/.env", "directly references Hermes secrets file"),
+            Finding("ssh_dir_access", "high", "exfiltration", "SKILL.md", 41,
+                    "Get-LocalUser", "references user SSH directory"),
+        ]
+        result = ScanResult(
+            skill_name="ai-agent-security-audit",
+            source="agent-created",
+            trust_level="agent-created",
+            verdict="dangerous",
+            findings=findings,
+            domain="security-audit",
+        )
+        allowed, reason = should_allow_install(result)
+        assert allowed is True
+        assert "security-audit" in reason
+        assert "downgraded" in reason
+        assert "2 vocabulary match" in reason  # count is in the message
+
+    def test_general_domain_still_asks_on_dangerous(self):
+        """Negative test: a non-security-audit agent-created skill with
+        dangerous findings should still get the 'ask' (None) decision.
+        Pin that we haven't over-broadened the downgrade."""
+        f = [Finding("env_exfil_curl", "critical", "exfiltration", "SKILL.md", 1,
+                     "curl $TOKEN", "exfiltration")]
+        result = ScanResult(
+            skill_name="some-other-skill",
+            source="agent-created",
+            trust_level="agent-created",
+            verdict="dangerous",
+            findings=f,
+            domain="general",
+        )
+        allowed, reason = should_allow_install(result)
+        assert allowed is None
+        assert "Requires confirmation" in reason
+
+    def test_default_domain_falls_back_to_general(self):
+        """ScanResult constructed without explicit domain should default
+        to "general" (preserves the existing 'ask' behavior for callers
+        that haven't been updated)."""
+        f = [Finding("env_exfil_curl", "critical", "exfiltration", "SKILL.md", 1,
+                     "curl $TOKEN", "exfiltration")]
+        # No domain kwarg → should default to "general"
+        result = ScanResult(
+            skill_name="legacy-skill",
+            source="agent-created",
+            trust_level="agent-created",
+            verdict="dangerous",
+            findings=f,
+        )
+        assert result.domain == "general"
+        allowed, _ = should_allow_install(result)
+        assert allowed is None
+
+    def test_real_ai_agent_security_audit_skill_passes_guard(self, tmp_path):
+        """End-to-end regression: build a skill that mimics the actual
+        ai-agent-security-audit SKILL.md (same description, same body
+        containing the exact 4 trigger phrases that originally blocked
+        the install) and confirm scan_skill + should_allow_install
+        together return allowed=True. If the detector keywords ever
+        drift or the policy branch is removed, this test fails."""
+        skill = tmp_path / "ai-agent-security-audit"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            "name: ai-agent-security-audit\n"
+            'description: "Class-level security audit of a local AI agent '
+            'deployment. 9-phase methodology with concrete fix commands."\n'
+            "platforms: [linux, macos, windows]\n"
+            "---\n"
+            "\n"
+            "# AI Agent Security Audit\n\n"
+            "Local users and group memberships: `Get-LocalUser`, "
+            "`Get-LocalGroup`.\n"
+            "Env file location: typically `~/.hermes/.env` or similar.\n"
+            "**Git:** `git ls-files | grep -E '\\.env|auth\\.json|secrets'`\n"
+            "Watch for: hardcoded paths, third-party API calls without keys.\n"
+        )
+        scan = scan_skill(skill, source="agent-created")
+        assert scan.domain == "security-audit", (
+            f"Expected security-audit domain, got {scan.domain!r}"
+        )
+        # The 4 trigger phrases should produce a dangerous verdict
+        assert scan.verdict == "dangerous", (
+            f"Expected dangerous verdict from trigger phrases, got "
+            f"{scan.verdict!r}; findings: {[(f.pattern_id, f.severity) for f in scan.findings]}"
+        )
+        # But should_allow_install should downgrade to allow
+        allowed, reason = should_allow_install(scan)
+        assert allowed is True, (
+            f"Expected allowed=True, got {allowed}; reason: {reason}"
+        )
+        assert "security-audit" in reason
+        assert "downgraded" in reason
 
 
 # ---------------------------------------------------------------------------
@@ -625,19 +837,79 @@ class TestFalsePositiveReductions:
         findings = scan_file(f, "lib.py")
         assert not any(fi.pattern_id == "python_os_environ" for fi in findings)
 
-    def test_os_environ_get_secret_named_still_critical(self, tmp_path):
+    def test_os_environ_get_secret_named_is_high_not_critical(self, tmp_path):
+        """`os.environ.get("GITHUB_TOKEN")` is config access, not exfiltration
+        by itself. The full exfiltration pattern (read + send) is a separate
+        concern. Downgraded to high in 2026-06 to unblock legitimate
+        integrations (model-router) without removing the audit signal."""
         f = tmp_path / "lib.py"
         f.write_text('token = os.environ.get("GITHUB_TOKEN")\n')
         findings = scan_file(f, "lib.py")
         sec = [fi for fi in findings if fi.pattern_id == "python_environ_get_secret"]
         assert sec
-        assert all(fi.severity == "critical" for fi in sec)
+        assert all(fi.severity == "high" for fi in sec), (
+            f"Expected high severity (was downgraded from critical), "
+            f"got {[fi.severity for fi in sec]}"
+        )
 
     def test_os_environ_bare_access_still_flagged(self, tmp_path):
         f = tmp_path / "lib.py"
         f.write_text("dump = dict(os.environ)\n")
         findings = scan_file(f, "lib.py")
         assert any(fi.pattern_id == "python_os_environ" for fi in findings)
+
+    def test_model_router_pattern_passes_guard(self, tmp_path):
+        """Regression: a skill that reads API keys via os.environ.get() with
+        NO outbound network calls should pass the agent-created guard.
+
+        This is the exact pattern that blocked model-router from being
+        modifiable: legitimate `os.environ.get("OPENROUTER_API_KEY")` for
+        normal API auth triggered a critical exfiltration verdict because
+        the scanner conflated config-access with exfiltration. Downgraded
+        to high in 2026-06 — this test pins the new behavior end-to-end.
+        """
+        skill = tmp_path / "model-router"
+        skill.mkdir()
+        (skill / "SKILL.md").write_text(
+            "---\n"
+            "name: model-router\n"
+            'description: "Route tasks to cloud or local LLM based on maturity."\n'
+            "platforms: [linux, macos, windows]\n"
+            "---\n"
+            "\n# model-router\n"
+        )
+        # Mimic the real compare.py / judge.py pattern
+        (skill / "lib.py").write_text(
+            'import os\n'
+            'OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")\n'
+            'EMBED_MODEL = os.environ.get("EMBED_MODEL", "bge-m3")\n'
+            'def _get_api_key():\n'
+            '    key = os.environ.get("OPENROUTER_API_KEY", "")\n'
+            '    if not key:\n'
+            '        raise RuntimeError("OPENROUTER_API_KEY is not set")\n'
+            '    return key\n'
+        )
+        scan = scan_skill(skill, source="agent-created")
+        # No criticals (downgraded) → verdict is caution, not dangerous
+        assert scan.verdict in ("safe", "caution"), (
+            f"Expected safe/caution for env-only reads, got {scan.verdict!r}; "
+            f"findings: {[(f.pattern_id, f.severity) for f in scan.findings]}"
+        )
+        # All secret-read findings are high, not critical
+        secret_findings = [
+            f for f in scan.findings
+            if f.pattern_id in ("python_environ_get_secret", "python_getenv_secret")
+        ]
+        assert secret_findings, "Should still flag the env reads (audit signal)"
+        assert all(f.severity == "high" for f in secret_findings), (
+            f"Secret reads should be high (audit signal), not critical: "
+            f"{[(f.pattern_id, f.severity) for f in secret_findings]}"
+        )
+        # Guard allows
+        allowed, reason = should_allow_install(scan)
+        assert allowed is True, (
+            f"agent-created + caution should be allowed; got {allowed}: {reason}"
+        )
 
 
 # ---------------------------------------------------------------------------

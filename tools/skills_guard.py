@@ -87,6 +87,80 @@ class ScanResult:
     findings: List[Finding] = field(default_factory=list)
     scanned_at: str = ""
     summary: str = ""
+    domain: str = "general"  # "general" | "security-audit" — see _detect_skill_domain
+
+
+# ---------------------------------------------------------------------------
+# Skill domain detection
+# ---------------------------------------------------------------------------
+#
+# Security-domain skills (security audit, hardening, posture check, etc.)
+# contain the very vocabulary the guard scans for (env file paths, user
+# enumeration commands, "watch for third-party API calls", `git ls-files |
+# grep secrets`) as *instructional* references for the auditor. They are
+# expected false-positive sources. _detect_skill_domain inspects the
+# SKILL.md frontmatter description and tags matching skills so
+# should_allow_install can downgrade the verdict.
+#
+# Keyword list is intentionally multi-word phrases (not single words like
+# "hardening" or "audit") to reduce the false-positive surface — a
+# PostgreSQL "audit" trigger or a financial "audit" workflow should NOT
+# be classified as security-audit domain.
+
+SECURITY_DOMAIN_KEYWORDS = (
+    "security audit",
+    "security review",
+    "security posture",
+    "security assessment",
+    "security baseline",
+    "security benchmark",
+    "security check",
+    "security configuration",
+    "security hardening",
+    "security scan",
+    "security testing",
+    "posture check",
+    "compliance check",
+    "vulnerability assessment",
+    "vulnerability scan",
+    "threat model",
+    "threat modeling",
+    "penetration test",
+    "penetration testing",
+    "red team",
+    "blue team",
+    "cis benchmark",
+    "disa stig",
+    "nist 800-53",
+    "nist 800-171",
+)
+
+
+def _detect_skill_domain(skill_path: Path) -> str:
+    """
+    Inspect a skill's SKILL.md frontmatter description and classify its domain.
+
+    Returns "security-audit" if the description matches any of the
+    security-domain keywords; otherwise "general". Returns "general" for
+    missing/unreadable SKILL.md or malformed frontmatter — fail-open
+    keeps non-security skills on the existing path.
+    """
+    skill_md = skill_path / "SKILL.md"
+    if not skill_md.is_file():
+        return "general"
+    try:
+        content = skill_md.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return "general"
+    if not content.startswith("---"):
+        return "general"
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        return "general"
+    frontmatter = parts[1].lower()
+    if any(kw in frontmatter for kw in SECURITY_DOMAIN_KEYWORDS):
+        return "security-audit"
+    return "general"
 
 
 # ---------------------------------------------------------------------------
@@ -155,12 +229,33 @@ THREAT_PATTERNS = [
     (r'os\.environ\b(?!\s*\.get\s*\(\s*["\'](?![^"\']*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)))',
      "python_os_environ", "high", "exfiltration",
      "accesses os.environ (potential env dump)"),
+    # ── Exfiltration: programmatic env access ──
+    # NOTE on severity: the two patterns below flag `os.environ.get(KEY)` /
+    # `os.getenv(KEY)` reads where KEY looks like a secret. By themselves
+    # these reads are CONFIG ACCESS, not exfiltration — they put a value
+    # into a local variable and send nothing anywhere. The full exfiltration
+    # pattern is "read secret + send secret to non-configured host", which is
+    # a separate concern (not yet covered by these patterns).
+    #
+    # Severity was previously "critical" on the theory that flagging the
+    # read forces human review of the surrounding use. In practice this
+    # over-blocks legitimate integrations (e.g. model-router's
+    # `os.environ.get("OPENROUTER_API_KEY")` to authenticate a normal API
+    # call) — and once a skill is installed, ANY future modification
+    # (even a doc-only patch) re-runs the guard and re-flags those
+    # legitimate reads, making the skill effectively un-modifiable.
+    #
+    # Downgraded to "high" so a single secret read → caution verdict →
+    # allowed for agent-created. The full exfiltration pattern is still
+    # caught by the `env_exfil_*` patterns above (curl/wget/fetch/requests
+    # with secret interpolation) and would warrant a follow-up scanner
+    # pass for outbound-network + secret-read co-occurrence.
     (r'os\.environ\s*\.get\s*\(\s*["\'][^"\']*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)',
-     "python_environ_get_secret", "critical", "exfiltration",
-     "reads secret via os.environ.get()"),
-    (r'os\.getenv\s*\(\s*[^\)]*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)',
-     "python_getenv_secret", "critical", "exfiltration",
-     "reads secret via os.getenv()"),
+     "python_environ_get_secret", "high", "exfiltration",
+     "reads secret via os.environ.get() (config access, not exfiltration by itself)"),
+    (r'os\.getenv\s*\(\s*[^)]*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)',
+     "python_getenv_secret", "high", "exfiltration",
+     "reads secret via os.getenv() (config access, not exfiltration by itself)"),
     (r'process\.env\[',
      "node_process_env", "high", "exfiltration",
      "accesses process.env (Node.js environment)"),
@@ -680,6 +775,7 @@ def scan_skill(skill_path: Path, source: str = "community") -> ScanResult:
         findings=all_findings,
         scanned_at=datetime.now(timezone.utc).isoformat(),
         summary=summary,
+        domain=_detect_skill_domain(skill_path),
     )
 
 
@@ -708,6 +804,19 @@ def should_allow_install(result: ScanResult, force: bool = False) -> Tuple[bool,
         )
 
     if decision == "ask":
+        # Security-domain skills (per their SKILL.md frontmatter) are an
+        # expected false-positive source: their content necessarily
+        # references the very patterns the guard scans for (env file
+        # paths, user enumeration commands, `git ls-files | grep
+        # secrets`, "third-party API calls") as *instructional* material
+        # for the auditor. Downgrade to allow with an audit log so the
+        # caller can still see what was downgraded.
+        if getattr(result, "domain", "general") == "security-audit":
+            return True, (
+                f"Allowed (security-audit domain, dangerous findings "
+                f"downgraded: {len(result.findings)} vocabulary match(es) "
+                f"in instructional context)"
+            )
         # Return None to signal "needs user confirmation"
         return None, (
             f"Requires confirmation ({result.trust_level} source + {result.verdict} verdict, "

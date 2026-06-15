@@ -75,18 +75,62 @@ def _guard_agent_created_enabled() -> bool:
         return False
 
 
+def _guard_allowlist() -> list:
+    """Read skills.guard_allowlist from config (default []).
+
+    Skills whose name is in this list are skipped by the security guard
+    entirely. Use for known-false-positive sources where the guard's
+    pattern-based scan over-blocks legitimate code (e.g. model-router's
+    `os.environ.get("OPENROUTER_API_KEY")` for a normal API auth header).
+
+    Configure via:
+        hermes config set skills.guard_allowlist '["model-router", "my-skill"]'
+    or
+        hermes config set skills.guard_allowlist "model-router,my-skill"
+
+    The skill is still scanned, and findings are still logged at INFO
+    level — the allowlist only suppresses the BLOCK decision, so the
+    human can see what would have been flagged and audit later.
+    """
+    try:
+        from hermes_cli.config import load_config
+        cfg = load_config()
+        raw = cfg_get(cfg, "skills", "guard_allowlist") or []
+        if isinstance(raw, str):
+            # Comma-separated string
+            return [s.strip() for s in raw.split(",") if s.strip()]
+        if isinstance(raw, list):
+            return [str(s).strip() for s in raw if str(s).strip()]
+        return []
+    except Exception:
+        return []
+
+
 def _security_scan_skill(skill_dir: Path) -> Optional[str]:
     """Scan a skill directory after write. Returns error string if blocked, else None.
 
     No-op when skills.guard_agent_created is disabled (the default).
+    Skills whose name is in skills.guard_allowlist are scanned but the
+    BLOCK decision is suppressed (findings are still logged).
     """
     if not _GUARD_AVAILABLE:
         return None
     if not _guard_agent_created_enabled():
         return None
+    allowlist = _guard_allowlist()
+    in_allowlist = skill_dir.name in allowlist
     try:
         result = scan_skill(skill_dir, source="agent-created")
         allowed, reason = should_allow_install(result)
+        if in_allowlist and allowed is not True:
+            # Suppress block for allowlisted skills. Log at INFO so the
+            # bypass is auditable.
+            logger.info(
+                "Security scan bypassed for %s (in guard_allowlist): "
+                "verdict=%s, findings=%d — %s",
+                skill_dir.name, result.verdict, len(result.findings), reason,
+            )
+            return None
         if allowed is False:
             report = format_scan_report(result)
             return f"Security scan blocked this skill ({reason}):\n{report}"
