@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "time-series-mcp"
+version = "0.1.0"
+description = "MCP server for local-cached, backtest-ready financial time-series data. Stores metric points and OHLCV bars in SQLite, fetches from yahoo/comex/generic sources, links to research projects."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Bill Agner", email = "noreply@hermes.local" },
+]
+keywords = ["mcp", "time-series", "finance", "ohlcv", "yahoo", "backtest", "cache"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "httpx>=0.27",
+    "mcp[cli]>=1.0",
+    "pydantic>=2.0",
+    "yfinance>=0.2.40",
+]
+
+[project.scripts]
+time-series-mcp = "time_series_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/time_series_mcp"]

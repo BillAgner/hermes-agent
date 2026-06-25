@@ -323,6 +323,7 @@ def probe_gateway() -> tuple[bool, str]:
                 out = subprocess.run(
                     ["tasklist", "/FI", f"PID eq {pid}"],
                     capture_output=True, text=True, timeout=5,
+                    encoding="utf-8",
                 )
                 pid_alive = str(pid) in out.stdout
             except Exception:
@@ -347,6 +348,7 @@ def probe_docker() -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "info", "--format", "{{.ServerVersion}}"],
             capture_output=True, text=True, timeout=8,
+            encoding="utf-8",
         )
         elapsed_ms = int((time.time() - t0) * 1000)
         if out.returncode != 0:
@@ -365,6 +367,7 @@ def probe_docker() -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.State}}"],
             capture_output=True, text=True, timeout=8,
+            encoding="utf-8",
         )
         if out.returncode != 0:
             return False, f"docker ps failed: {out.stderr.strip()[:80]}"
@@ -661,6 +664,7 @@ def kill_pids(pids: list[int]) -> int:
             r = subprocess.run(
                 ["taskkill", "/F", "/PID", str(pid)],
                 capture_output=True, text=True, timeout=5,
+                encoding="utf-8",
             )
             if r.returncode == 0:
                 killed += 1
@@ -759,6 +763,7 @@ def kill_gateway_process() -> int:
             r = subprocess.run(
                 ["taskkill", "/F", "/PID", str(pid)],
                 capture_output=True, text=True, timeout=5,
+                encoding="utf-8",
             )
             if r.returncode == 0:
                 killed += 1
@@ -825,12 +830,14 @@ def try_restart_docker_container(name: str) -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "restart", name],
             capture_output=True, text=True, timeout=30,
+            encoding="utf-8",
         )
         if out.returncode == 0:
             return True, f"docker restart {name}: {out.stdout.strip()[:60]}"
         out2 = subprocess.run(
             ["docker", "start", name],
             capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
         if out2.returncode == 0:
             return True, f"docker start {name}: {out2.stdout.strip()[:60]}"
@@ -847,10 +854,12 @@ def try_restart_wsl_distro(name: str) -> tuple[bool, str]:
         subprocess.run(
             ["wsl", "--terminate", name],
             capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
         out = subprocess.run(
             ["wsl", "-d", name, "--", "/bin/true"],
             capture_output=True, text=True, timeout=30,
+            encoding="utf-8",
         )
         if out.returncode == 0:
             return True, f"wsl --terminate + boot {name} OK"
@@ -912,6 +921,7 @@ def run_cycle() -> dict:
                         ps = subprocess.run(
                             ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.State}}"],
                             capture_output=True, text=True, timeout=8,
+                            encoding="utf-8",
                         )
                         for ln in ps.stdout.splitlines():
                             parts = ln.split("\t")

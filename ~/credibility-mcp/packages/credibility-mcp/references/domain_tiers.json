@@ -1,0 +1,212 @@
+{
+  "$schema": "source-credibility v1 tier table",
+  "weights": {
+    "source_class": 0.30,
+    "citation_provenance": 0.20,
+    "domain_authority": 0.15,
+    "corroboration": 0.15,
+    "recency": 0.10,
+    "author_track_record": 0.05,
+    "methodology": 0.05
+  },
+  "classes": {
+    "primary_data": {
+      "score_baseline": 0.90,
+      "description": "First-party datasets released by the data owner (CME, BLS, BEA, FRED, EIA, etc.)"
+    },
+    "peer_reviewed": {
+      "score_baseline": 0.88,
+      "description": "Peer-reviewed journals, conference proceedings, indexed in PubMed/IEEE/arXiv-with-endorsement"
+    },
+    "gov_official": {
+      "score_baseline": 0.85,
+      "description": "Government bodies, central banks, official policy publications"
+    },
+    "primary_doc": {
+      "score_baseline": 0.80,
+      "description": "Company filings (10-K/10-Q), official press releases, court records"
+    },
+    "mainstream_press": {
+      "score_baseline": 0.75,
+      "description": "Editorial press with standards: Reuters, AP, Bloomberg, WSJ, FT, NYT, BBC, Economist"
+    },
+    "industry_trade": {
+      "score_baseline": 0.65,
+      "description": "Industry trade publications (Mining Weekly, Kitco editorial, LBMA)"
+    },
+    "recognized_expert_blog": {
+      "score_baseline": 0.55,
+      "description": "Individual analysts with track records, established Substacks, known newsletters"
+    },
+    "niche_forum": {
+      "score_baseline": 0.40,
+      "description": "Topic-specific forums (r/Silverbugs, Stack Exchange sites, professional Slack/Discord archives)"
+    },
+    "generic_blog": {
+      "score_baseline": 0.38,
+      "description": "Personal blogs, generic Medium posts, WordPress/Blogger/Substack without track record"
+    },
+    "social_media": {
+      "score_baseline": 0.30,
+      "description": "Twitter/X, Facebook, Instagram, LinkedIn, TikTok, Threads"
+    },
+    "content_farm": {
+      "score_baseline": 0.15,
+      "description": "SEO-driven content farms, AI-spam sites, known low-quality aggregators"
+    },
+    "unknown": {
+      "score_baseline": 0.40,
+      "description": "Cannot classify — assigned neutral baseline"
+    }
+  },
+  "domain_to_class": {
+    "cmegroup.com": "primary_data",
+    "comex.com": "primary_data",
+    "bls.gov": "primary_data",
+    "bea.gov": "primary_data",
+    "fred.stlouisfed.org": "primary_data",
+    "eia.gov": "primary_data",
+    "worldbank.org": "primary_data",
+    "data.imf.org": "primary_data",
+    "oecd.org": "primary_data",
+    "silverdata.io": "primary_data",
+    "sec.gov": "primary_doc",
+    "edgar.sec.gov": "primary_doc",
+    "companieshouse.gov.uk": "primary_doc",
+    "arxiv.org": "peer_reviewed",
+    "nature.com": "peer_reviewed",
+    "science.org": "peer_reviewed",
+    "pubmed.ncbi.nlm.nih.gov": "peer_reviewed",
+    "ncbi.nlm.nih.gov": "peer_reviewed",
+    "ieee.org": "peer_reviewed",
+    "acm.org": "peer_reviewed",
+    "jstor.org": "peer_reviewed",
+    "sciencedirect.com": "peer_reviewed",
+    "link.springer.com": "peer_reviewed",
+    "onlinelibrary.wiley.com": "peer_reviewed",
+    "cell.com": "peer_reviewed",
+    "thelancet.com": "peer_reviewed",
+    "nejm.org": "peer_reviewed",
+    "bmj.com": "peer_reviewed",
+    "plos.org": "peer_reviewed",
+    "pnas.org": "peer_reviewed",
+    "federalreserve.gov": "gov_official",
+    "treasury.gov": "gov_official",
+    "ecb.europa.eu": "gov_official",
+    "europa.eu": "gov_official",
+    "whitehouse.gov": "gov_official",
+    "congress.gov": "gov_official",
+    "supremecourt.gov": "gov_official",
+    "loc.gov": "gov_official",
+    "census.gov": "gov_official",
+    "irs.gov": "gov_official",
+    "justice.gov": "gov_official",
+    "state.gov": "gov_official",
+    "reuters.com": "mainstream_press",
+    "ap.org": "mainstream_press",
+    "apnews.com": "mainstream_press",
+    "bloomberg.com": "mainstream_press",
+    "wsj.com": "mainstream_press",
+    "ft.com": "mainstream_press",
+    "nytimes.com": "mainstream_press",
+    "bbc.com": "mainstream_press",
+    "bbc.co.uk": "mainstream_press",
+    "theguardian.com": "mainstream_press",
+    "economist.com": "mainstream_press",
+    "washingtonpost.com": "mainstream_press",
+    "cnn.com": "mainstream_press",
+    "cnbc.com": "mainstream_press",
+    "forbes.com": "mainstream_press",
+    "time.com": "mainstream_press",
+    "newsweek.com": "mainstream_press",
+    "theatlantic.com": "mainstream_press",
+    "npr.org": "mainstream_press",
+    "pbs.org": "mainstream_press",
+    "latimes.com": "mainstream_press",
+    "japantimes.co.jp": "mainstream_press",
+    "scmp.com": "mainstream_press",
+    "abc.net.au": "mainstream_press",
+    "smh.com.au": "mainstream_press",
+    "reutersagency.com": "mainstream_press",
+    "mining.com": "industry_trade",
+    "miningweekly.com": "industry_trade",
+    "kitco.com": "industry_trade",
+    "morningstar.com": "industry_trade",
+    "lbma.org.uk": "industry_trade",
+    "platts.com": "industry_trade",
+    "argusmedia.com": "industry_trade",
+    "reddit.com": "niche_forum",
+    "old.reddit.com": "niche_forum",
+    "stackexchange.com": "niche_forum",
+    "stackoverflow.com": "niche_forum",
+    "quora.com": "niche_forum",
+    "medium.com": "generic_blog",
+    "wordpress.com": "generic_blog",
+    "blogspot.com": "generic_blog",
+    "substack.com": "generic_blog",
+    "ghost.io": "generic_blog",
+    "twitter.com": "social_media",
+    "x.com": "social_media",
+    "facebook.com": "social_media",
+    "instagram.com": "social_media",
+    "linkedin.com": "social_media",
+    "tiktok.com": "social_media",
+    "threads.net": "social_media"
+  },
+  "suffix_rules": {
+    ".gov": "gov_official",
+    ".mil": "gov_official",
+    ".europa.eu": "gov_official"
+  },
+  "content_farm_signals": {
+    "url_patterns": [
+      "best-",
+      "top-10-",
+      "top-",
+      "/review/",
+      "/reviews/",
+      "/buying-guide/",
+      "/affiliate/",
+      "?ref=",
+      "?utm_"
+    ],
+    "domain_substrings": [
+      "bestof",
+      "top10",
+      "reviewsite",
+      "dealsite",
+      "coupons",
+      "freekindle",
+      "ai-generated"
+    ],
+    "score_penalty": 0.30
+  },
+  "recency_windows": {
+    "primary_data": {
+      "fresh_days": 7,
+      "stale_days": 90
+    },
+    "mainstream_press": {
+      "fresh_days": 7,
+      "stale_days": 60
+    },
+    "peer_reviewed": {
+      "fresh_days": 365,
+      "stale_days": 1825
+    },
+    "industry_trade": {
+      "fresh_days": 30,
+      "stale_days": 365
+    },
+    "default": {
+      "fresh_days": 30,
+      "stale_days": 365
+    }
+  },
+  "default_thresholds": {
+    "hidden_below": 0.25,
+    "strong_caveat_below": 0.45,
+    "light_caveat_below": 0.65,
+    "fully_cited_above": 0.80
+  }
+}

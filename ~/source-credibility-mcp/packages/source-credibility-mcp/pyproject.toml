@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "source-credibility-mcp"
+version = "0.1.0"
+description = "MCP server for source credibility scoring — every cited source gets a 0-1 score with a transparent breakdown."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Bill Agner", email = "noreply@hermes.local" },
+]
+keywords = ["mcp", "credibility", "research", "source-rating", "evidence"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing :: Indexing",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "mcp[cli]>=1.0",
+]
+
+[project.scripts]
+source-credibility-mcp = "credibility_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/credibility_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/credibility_mcp/data/domains.json" = "credibility_mcp/data/domains.json"
+

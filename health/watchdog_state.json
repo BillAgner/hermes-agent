@@ -1,55 +1,55 @@
 {
   "version": 2,
   "started_at": "2026-06-21T11:49:30+00:00",
-  "last_run": "2026-06-25T06:13:52+00:00",
-  "last_clean": "2026-06-25T06:13:52+00:00",
+  "last_run": "2026-06-25T16:37:23+00:00",
+  "last_clean": "2026-06-25T16:37:23+00:00",
   "services": {
     "gateway": {
       "ok": true,
       "msg": "HTTP 200, PID ? unverified",
-      "last_check": "2026-06-25T06:13:44+00:00",
+      "last_check": "2026-06-25T16:37:22+00:00",
       "consecutive_failures": 0
     },
     "docker": {
       "ok": true,
-      "msg": "docker v29.5.2 (395ms), 8 containers Up",
-      "last_check": "2026-06-25T06:13:44+00:00",
+      "msg": "docker v29.5.2 (408ms), 8 containers Up",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "wsl": {
       "ok": true,
       "msg": "WSL: docker-desktop=Running, hermes-tools=Running (active OK)",
-      "last_check": "2026-06-25T06:13:46+00:00",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "honcho": {
       "ok": true,
       "msg": "Honcho /health OK ({\"status\":\"ok\"})",
-      "last_check": "2026-06-25T06:13:46+00:00",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "open_notebook": {
       "ok": true,
       "msg": "Open Notebook HTTP 200",
-      "last_check": "2026-06-25T06:13:46+00:00",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "memory_tiers": {
       "ok": false,
       "msg": "cold_tier.db missing; warm_tier.qdrant/ missing",
-      "last_check": "2026-06-25T06:13:46+00:00",
-      "consecutive_failures": 136
+      "last_check": "2026-06-25T16:37:23+00:00",
+      "consecutive_failures": 151
     },
     "disk_space": {
       "ok": true,
-      "msg": "disk free 281.3GB",
-      "last_check": "2026-06-25T06:13:46+00:00",
+      "msg": "disk free 277.5GB",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "heartbeat": {
       "ok": true,
       "msg": "state.db-wal heartbeat 0.2m old",
-      "last_check": "2026-06-25T06:13:46+00:00",
+      "last_check": "2026-06-25T16:37:23+00:00",
       "consecutive_failures": 0
     },
     "mcp:tradingview": {
@@ -138,13 +138,6 @@
     }
   },
   "recovery_history": [
-    {
-      "ts": "2026-06-25T05:26:47+00:00",
-      "service": "gateway",
-      "action": "restart",
-      "ok": false,
-      "msg": "restarted but probe still failing after 25s: URLError: [WinError 10061] No connection could be made because the target machine actively refused it"
-    },
     {
       "ts": "2026-06-25T05:26:52+00:00",
       "service": "tradingview",
@@ -837,6 +830,13 @@
       "action": "recover",
       "ok": true,
       "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T16:24:56+00:00",
+      "service": "gateway",
+      "action": "restart",
+      "ok": true,
+      "msg": "restarted (killed=0, attempt=4); HTTP 200, PID ? unverified"
     }
   ],
   "dependency_map": {
@@ -876,7 +876,7 @@
     "wsl": 0,
     "honcho": 0,
     "open_notebook": 0,
-    "memory_tiers": 136,
+    "memory_tiers": 151,
     "disk_space": 0,
     "heartbeat": 0,
     "mcp:tradingview": 3,
@@ -903,6 +903,6 @@
     "mcp:forge_mcp": 65,
     "mcp:voxcpm": 0
   },
-  "last_alert": "2026-06-25T06:11:55+00:00",
+  "last_alert": "2026-06-25T16:25:27+00:00",
   "alert_fingerprint": "mcp:tradingview,mcp:voxcpm,memory_tiers"
 }

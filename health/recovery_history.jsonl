@@ -329,3 +329,4 @@
 {"ts": "2026-06-25T06:10:50+00:00", "service": "voxcpm", "action": "recover", "ok": true, "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"}
 {"ts": "2026-06-25T06:12:52+00:00", "service": "tradingview", "action": "recover", "ok": false, "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"}
 {"ts": "2026-06-25T06:12:52+00:00", "service": "voxcpm", "action": "recover", "ok": true, "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"}
+{"ts": "2026-06-25T16:24:56+00:00", "service": "gateway", "action": "restart", "ok": true, "msg": "restarted (killed=0, attempt=4); HTTP 200, PID ? unverified"}

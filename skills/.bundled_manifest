@@ -6,6 +6,7 @@ arxiv:50b82de7a53abdf7a4ef043a701be398
 ascii-art:5ca2e65eaf431df0b92004ca42ceadb5
 ascii-video:59a8b64be85d9ef92a8f2a16e4f6d246
 audiocraft-audio-generation:0d3cc6f7443bd3a462225f3b7b1363c1
+autoresearch:e62908ead27cb59375b41a40a021ba27
 baoyu-infographic:cb0095e82b0418158cec0f224e0e8f17
 blogwatcher:6dae4e76a27992dc624eb25747c54af5
 claude-code:f438d67c46a38dbd05b9626929dc8c7f
@@ -17,6 +18,7 @@ commodity-inventory-monitor:73caed92abbbbb2b497faf0d0333628c
 daily-news-digest:0e05dce1cebd3bf121004e07c7bfbf0b
 design-md:7fb48f524b56423ee2f56e38943b27b5
 dogfood:a130b7d697695c5fe8974cf23b4671e7
+domain-intel:c067144cfa95417f62506a3ab4801279
 evaluating-llms-harness:e4348e385021926ca39b854552dfa29e
 excalidraw:9f85257751ce2545cd5a9ed00c135afa
 findmy:3e86ddb7a7aea025a6b11cdea9d33d37
@@ -37,12 +39,14 @@ imessage:6b67771c4ee8ddfcc4fb2ad88792d053
 jupyter-live-kernel:5d7eae2fe9575dfc4c4f8030f8140211
 kanban-orchestrator:0ac722ef694dad3eec44c83377b856a5
 kanban-worker:e98cda7ec45aa719f5871f87a7eec18f
+last30days:03c655c530a15f05af8e525f24ad63f5
 lessons-manage:4bc17e8c300bcc9ccd8e3b8930a14b40
 llama-cpp:f71693147ed3eea813b25feaa83624c9
 llm-wiki:c7ad106fdd4f9b473d721ab84b1857fb
 macos-computer-use:a0fd3f0eed76206270fa185c8f767ffa
 manim-video:7e0431543d520bbed0b19ea631df8685
 maps:9f5d9a336be620a1e339b6af5bfc1abe
+mcporter:fcb7ab21b94c2f555d71bd1b887c9868
 memory-curator:f744057631d48c14af1c555495f33dae
 model-router:5f044cf8162b41023c6218baabb6e2c4
 nano-pdf:ffc0c90fc7ed18952ccbf1b69ab3aabb
@@ -51,8 +55,10 @@ node-inspect-debugger:6473107cd22f8aae9d2151604dd40a06
 notion:25df911c8ffcaedc8999f616a9493d3c
 obsidian:b02d4094a8daf25c2b8bc6e9176d130e
 ocr-and-documents:2332c7f6384304f6c3304cb02997269b
+open-notebook:99315962a288cb1723229008525cc354
 opencode:7bc2f5e07afb18b0212777b0900af70a
 openhue:ceea31a6a7da1dc2e02af90aeef9a900
+osint-investigation:8c618f558bc6aca64498941a86e9b283
 p5js:e4890094a7970c70bb3f1ae872e17284
 plan:1af6b6b2d6a42305dd0033c6f0e74394
 polymarket:103bcade7125a3c7b3318e7449ef922b
@@ -62,6 +68,8 @@ pretext:a173114edf667924f1b8ff707fc7776d
 python-debugpy:cdd5230fc44fe99a97b5387bd381252b
 requesting-code-review:9f2128b92c46f95634c05ecfd5239733
 research-paper-writing:10480ccf49d36a4833dd4f967d25dcd7
+research-project:79f28b46344fab1de96a9fd94418cbcd
+scrapling:96a2e2a85ce331d97e8da1d420a2a22c
 segment-anything-model:1be251bf1d42d9c961037028817f0504
 serving-llms-vllm:eec9792ce47a184f763e38d8c53f1a0a
 simplify-code:dc05077994bd36b0cb6085b27c322de2
@@ -69,6 +77,7 @@ sketch:bbbae5b64645ec74ad4e00c636c81f6d
 songsee:9779639913d011eacf83991773c9ead3
 songwriting-and-ai-music:b98636085b94772eb7e0440c6c22f2f9
 spike:7575298a60e9bd0ee48af67eb71c0a51
+stocks:0a354ecf73b11d9b9402ba9dbd06c51a
 systematic-debugging:d891b7208762466e77748240da54defa
 teams-meeting-pipeline:56e7d01ca0110f81de57d10009b50517
 test-driven-development:9a505bc33fc53be281e9ba53e371d3eb
@@ -83,6 +92,7 @@ understand-domain:0b4369d2dbe55dd8d8d996da8de5b02c
 understand-explain:74a801728409c5aa7f43e4bd10c0c9ea
 understand-knowledge:8784a5b3f579703d5a71741440844d70
 understand-onboard:61b55e501eabeb26c2a6814827042a1a
+voxcpm:171f6a61f180f50f790d5ee8e628a106
 webwright:e16fc979f016a5ae78f8f7dfb6f88ddd
 weights-and-biases:1db3db2aa7a8d72a0694a673441ac24a
 xurl:9ece82cfcdc4dff252ca27bfbee9d792

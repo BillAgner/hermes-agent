@@ -1,0 +1,26 @@
+
+--- FAILURE ---
+self=WindowsPath('C:/Data/Hermes 0.17.0/optional-skills/finance/stocks')
+str(self)='C:\\Data\\Hermes 0.17.0\\optional-skills\\finance\\stocks'
+str(self).lower()='c:\\data\\hermes 0.17.0\\optional-skills\\finance\\stocks'
+other=(WindowsPath('C:/Data/Hermes_0.17.0/optional-skills'),)
+str(other[0])='C:\\Data\\Hermes_0.17.0\\optional-skills'
+str(other[0]).lower()='c:\\data\\hermes_0.17.0\\optional-skills'
+self.is_relative_to(other[0])=False
+self.resolve()=WindowsPath('C:/Data/Hermes 0.17.0/optional-skills/finance/stocks')
+other[0].resolve()=WindowsPath('C:/Data/Hermes 0.17.0/optional-skills')
+os.path.commonpath=C:\Data
+os.path.relpath=..\..\Hermes 0.17.0\optional-skills\finance\stocks
+
+--- FAILURE ---
+self=WindowsPath('C:/Data/Hermes 0.17.0/skills/stocks')
+str(self)='C:\\Data\\Hermes 0.17.0\\skills\\stocks'
+str(self).lower()='c:\\data\\hermes 0.17.0\\skills\\stocks'
+other=(WindowsPath('C:/Data/Hermes_0.17.0/skills'),)
+str(other[0])='C:\\Data\\Hermes_0.17.0\\skills'
+str(other[0]).lower()='c:\\data\\hermes_0.17.0\\skills'
+self.is_relative_to(other[0])=False
+self.resolve()=WindowsPath('C:/Data/Hermes 0.17.0/skills/stocks')
+other[0].resolve()=WindowsPath('C:/Data/Hermes 0.17.0/skills')
+os.path.commonpath=C:\Data
+os.path.relpath=..\..\Hermes 0.17.0\skills\stocks

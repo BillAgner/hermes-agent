@@ -104,6 +104,7 @@ def send_telegram(text: str) -> None:
         subprocess.run(
             ["hermes", "send", "--to", "telegram", text],
             capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
     except Exception:
         pass
@@ -135,6 +136,7 @@ def probe_gateway() -> tuple[bool, str]:
                 out = subprocess.run(
                     ["tasklist", "/FI", f"PID eq {pid}"],
                     capture_output=True, text=True, timeout=5,
+                    encoding="utf-8",
                 )
                 pid_alive = str(pid) in out.stdout
             except Exception:
@@ -164,6 +166,7 @@ def probe_cron_health() -> tuple[bool, str]:
     try:
         out = subprocess.run(
             ["hermes", "cron", "list"], capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
     except Exception as e:
         return False, f"hermes cron list failed: {e}"
@@ -211,6 +214,7 @@ def probe_mcp_servers() -> tuple[bool, str]:
     try:
         out = subprocess.run(
             ["hermes", "mcp", "list"], capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
     except Exception as e:
         return False, f"hermes mcp list failed: {e}"
@@ -289,6 +293,7 @@ def probe_docker() -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "info", "--format", "{{.ServerVersion}}"],
             capture_output=True, text=True, timeout=8,
+            encoding="utf-8",
         )
         elapsed_ms = int((time.time() - t0) * 1000)
         if out.returncode != 0:
@@ -309,6 +314,7 @@ def probe_docker() -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.State}}"],
             capture_output=True, text=True, timeout=8,
+            encoding="utf-8",
         )
         if out.returncode != 0:
             return False, f"docker ps failed: {out.stderr.strip()[:80]}"
@@ -477,6 +483,7 @@ def try_restart_mcp(profile_path: Path, mcp_name: str) -> tuple[bool, str]:
              f"name='node.exe' or name='npx.exe'",
              "get", "ProcessId,CommandLine", "/format:CSV"],
             capture_output=True, text=True, timeout=10,
+            encoding="utf-8",
         )
         killed = 0
         for line in out.stdout.splitlines()[1:]:
@@ -560,6 +567,7 @@ def try_restart_docker_container(name: str) -> tuple[bool, str]:
         out = subprocess.run(
             ["docker", "restart", name],
             capture_output=True, text=True, timeout=30,
+            encoding="utf-8",
         )
         if out.returncode == 0:
             return True, f"docker restart {name}: {out.stdout.strip()[:60]}"
@@ -567,6 +575,7 @@ def try_restart_docker_container(name: str) -> tuple[bool, str]:
         out2 = subprocess.run(
             ["docker", "start", name],
             capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
         if out2.returncode == 0:
             return True, f"docker start {name}: {out2.stdout.strip()[:60]}"
@@ -586,11 +595,13 @@ def try_restart_wsl_distro(name: str) -> tuple[bool, str]:
         subprocess.run(
             ["wsl", "--terminate", name],
             capture_output=True, text=True, timeout=15,
+            encoding="utf-8",
         )
         # Boot it by running a no-op command
         out = subprocess.run(
             ["wsl", "-d", name, "--", "/bin/true"],
             capture_output=True, text=True, timeout=30,
+            encoding="utf-8",
         )
         if out.returncode == 0:
             return True, f"wsl --terminate + boot {name} OK"
@@ -655,6 +666,7 @@ def main() -> int:
                         ps_out = subprocess.run(
                             ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.State}}"],
                             capture_output=True, text=True, timeout=8,
+                            encoding="utf-8",
                         )
                         for ln in ps_out.stdout.splitlines():
                             parts = ln.split("\t")
@@ -677,6 +689,7 @@ def main() -> int:
                             ["cmd", "/c", "start-honcho.cmd"],
                             cwd="C:\\honcho",
                             capture_output=True, text=True, timeout=60,
+                            encoding="utf-8",
                         )
                         recoveries.append("🔄 invoked start-honcho.cmd (full stack)")
                     except Exception as e:

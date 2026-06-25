@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "credibility-mcp"
+version = "0.1.0"
+description = "MCP server for source credibility scoring — assign a 0-1 trust score to any source with an explicit, explainable formula and render it inline on every citation."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Bill Agner", email = "noreply@hermes.local" },
+]
+keywords = ["mcp", "credibility", "research", "sources", "citations", "epistemics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "mcp[cli]>=1.0",
+]
+
+[project.scripts]
+credibility-mcp = "credibility_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/credibility_mcp"]

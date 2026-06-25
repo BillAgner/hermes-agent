@@ -1124,6 +1124,7 @@ def _git_branch_for_cwd(cwd: str) -> str:
             timeout=1.5,
             check=False,
             stdin=subprocess.DEVNULL,
+            encoding="utf-8",
         )
         if result.returncode == 0:
             branch = result.stdout.strip()
@@ -1136,6 +1137,7 @@ def _git_branch_for_cwd(cwd: str) -> str:
             timeout=1.5,
             check=False,
             stdin=subprocess.DEVNULL,
+            encoding="utf-8",
         )
         return head.stdout.strip() if head.returncode == 0 else ""
     except Exception:
@@ -7081,7 +7083,7 @@ def _(rid, params: dict) -> dict:
             str(pdf_path), str(out_prefix),
         ]
         try:
-            res = subprocess.run(argv, capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
+            res = subprocess.run(argv, capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL, encoding="utf-8")
         except subprocess.TimeoutExpired:
             return _err(rid, 5028, "pdftoppm timed out (>120s)")
         if res.returncode != 0:
@@ -8636,6 +8638,7 @@ def _(rid, params: dict) -> dict:
             cwd=os.getcwd(),
             env=os.environ.copy(),
             stdin=subprocess.DEVNULL,
+            encoding="utf-8",
         )
         parts = [r.stdout or "", r.stderr or ""]
         out = "\n".join(p for p in parts if p).strip() or "(no output)"
@@ -10924,7 +10927,7 @@ def _(rid, params: dict) -> dict:
     try:
         r = subprocess.run(
             cmd, shell=True, capture_output=True, text=True, timeout=30, cwd=os.getcwd(),
-            stdin=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL, encoding="utf-8",
         )
         return _ok(
             rid,
