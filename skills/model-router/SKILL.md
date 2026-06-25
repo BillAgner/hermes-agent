@@ -124,6 +124,22 @@ When the user invokes `/routing`, the agent should:
 3. For `/routing promote <id>`, confirm with the user before running
    `apply` (or run `apply` automatically — see the user's preference).
 
+## Tool install: check ollama before letting the tool download its own GGUF
+
+When evaluating a new tool that needs an embedding, reranker, or small-LLM model, **check `ollama list` first**. If ollama already has a model that fits the role, configure the tool to call ollama's HTTP API instead of letting it download its own GGUF (usually 0.5–2 GB).
+
+Reasons:
+- Avoids ~2 GB of duplicate model downloads (model-router already routes cloud ↔ local; adding more local models via other tools just wastes disk + bandwidth).
+- Stops GPU VRAM contention. The fallback chain already pulls 14B/32B into VRAM; a second set of GGUF loaders from a different process races for the same memory.
+- Single source of truth. The `ollama list` inventory is what's audited; tooling outside that inventory is invisible to it.
+
+How to apply:
+- Run `ollama list` early when researching a tool's deps.
+- If the role maps to an existing ollama model, plan the install to route through `http://localhost:11434` (embedding: `/v1/embeddings`, chat: `/api/chat`, rerank: `/api/rerank` if supported else `/api/chat` with yes/no + logprobs).
+- If no ollama model fits, fall back to the tool's bundled GGUF and **add the model to the ollama pull list** as a follow-up so it joins the central inventory.
+
+This pattern was identified during QMD (Query Markup Documents) planning — QMD ships its own node-llama-cpp trio, but ollama already had `bge-m3` + `bge-reranker-v2-m3` + `qwen3:8b` on disk.
+
 For user-initiated tasks (Pattern A), the agent is encouraged to:
 - After a task succeeds, call `record_success("<descriptive-id>")` to
   accumulate maturity.

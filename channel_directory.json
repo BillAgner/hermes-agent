@@ -1,7 +1,14 @@
 {
-  "updated_at": "2026-06-25T09:34:22.304575",
+  "updated_at": "2026-06-25T14:12:55.842327",
   "platforms": {
-    "telegram": [],
+    "telegram": [
+      {
+        "id": "8568067385",
+        "name": "William Agner",
+        "type": "dm",
+        "thread_id": null
+      }
+    ],
     "discord": [],
     "whatsapp": [],
     "whatsapp_cloud": [],

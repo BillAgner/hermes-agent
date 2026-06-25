@@ -143,3 +143,6 @@ cron/output/
 skills/graphify-out/
 graphify-out/cache/
 graphify-out/graph.json
+config.yaml.bak.*
+config.yaml.corrupt.*
+MEMORY.md.bak*

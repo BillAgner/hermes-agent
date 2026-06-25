@@ -1,0 +1,80 @@
+{
+  "lessons-manage": {
+    "archived_at": null,
+    "created_at": "2026-06-25T20:16:50.773266+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": "2026-06-25T20:16:50.777532+00:00",
+    "last_viewed_at": "2026-06-25T20:16:50.773266+00:00",
+    "patch_count": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "mcporter": {
+    "archived_at": null,
+    "created_at": "2026-06-25T17:54:35.238108+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": "2026-06-25T17:54:35.243920+00:00",
+    "last_viewed_at": "2026-06-25T17:54:35.238108+00:00",
+    "patch_count": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "model-router": {
+    "archived_at": null,
+    "created_at": "2026-06-25T17:54:34.217438+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-06-25T20:05:23.780913+00:00",
+    "last_used_at": "2026-06-25T17:54:34.223946+00:00",
+    "last_viewed_at": "2026-06-25T17:54:34.217438+00:00",
+    "patch_count": 1,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "obsidian": {
+    "archived_at": null,
+    "created_at": "2026-06-25T17:22:48.098716+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-06-25T20:05:06.893470+00:00",
+    "last_used_at": "2026-06-25T17:22:48.098716+00:00",
+    "last_viewed_at": "2026-06-25T17:22:48.098716+00:00",
+    "patch_count": 1,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "plan": {
+    "archived_at": null,
+    "created_at": "2026-06-25T17:36:27.162996+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": "2026-06-25T17:36:27.167466+00:00",
+    "last_viewed_at": "2026-06-25T17:36:27.163532+00:00",
+    "patch_count": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  },
+  "qmd-install": {
+    "archived_at": null,
+    "created_at": "2026-06-25T20:38:18.974391+00:00",
+    "created_by": null,
+    "last_patched_at": "2026-06-25T21:08:02.396609+00:00",
+    "last_used_at": "2026-06-25T20:38:18.980401+00:00",
+    "last_viewed_at": "2026-06-25T20:38:18.974391+00:00",
+    "patch_count": 2,
+    "pinned": false,
+    "state": "active",
+    "use_count": 1,
+    "view_count": 1
+  }
+}

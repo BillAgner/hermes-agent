@@ -1,842 +1,849 @@
 {
   "version": 2,
   "started_at": "2026-06-21T11:49:30+00:00",
-  "last_run": "2026-06-25T16:37:23+00:00",
-  "last_clean": "2026-06-25T16:37:23+00:00",
+  "last_run": "2026-06-25T21:13:09+00:00",
+  "last_clean": "2026-06-25T21:13:09+00:00",
   "services": {
     "gateway": {
       "ok": true,
       "msg": "HTTP 200, PID ? unverified",
-      "last_check": "2026-06-25T16:37:22+00:00",
+      "last_check": "2026-06-25T21:13:00+00:00",
       "consecutive_failures": 0
     },
     "docker": {
       "ok": true,
-      "msg": "docker v29.5.2 (408ms), 8 containers Up",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "msg": "docker v29.5.2 (231ms), 8 containers Up",
+      "last_check": "2026-06-25T21:13:01+00:00",
       "consecutive_failures": 0
     },
     "wsl": {
       "ok": true,
       "msg": "WSL: docker-desktop=Running, hermes-tools=Running (active OK)",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "last_check": "2026-06-25T21:13:02+00:00",
       "consecutive_failures": 0
     },
     "honcho": {
       "ok": true,
       "msg": "Honcho /health OK ({\"status\":\"ok\"})",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "last_check": "2026-06-25T21:13:02+00:00",
       "consecutive_failures": 0
     },
     "open_notebook": {
       "ok": true,
       "msg": "Open Notebook HTTP 200",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "last_check": "2026-06-25T21:13:02+00:00",
       "consecutive_failures": 0
     },
     "memory_tiers": {
-      "ok": false,
-      "msg": "cold_tier.db missing; warm_tier.qdrant/ missing",
-      "last_check": "2026-06-25T16:37:23+00:00",
-      "consecutive_failures": 151
+      "ok": true,
+      "msg": "cold 44KB, warm 4KB",
+      "last_check": "2026-06-25T21:13:02+00:00",
+      "consecutive_failures": 0
     },
     "disk_space": {
       "ok": true,
-      "msg": "disk free 277.5GB",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "msg": "disk free 266.8GB",
+      "last_check": "2026-06-25T21:13:02+00:00",
       "consecutive_failures": 0
     },
     "heartbeat": {
       "ok": true,
-      "msg": "state.db-wal heartbeat 0.2m old",
-      "last_check": "2026-06-25T16:37:23+00:00",
+      "msg": "state.db-wal heartbeat 0.6m old",
+      "last_check": "2026-06-25T21:13:02+00:00",
       "consecutive_failures": 0
     },
     "mcp:tradingview": {
       "ok": false,
       "msg": "binary probe exit 1: Traceback (most recent call last):   File \"<frozen runpy>\", line 198, in _run_mo",
-      "last_check": "2026-06-25T06:13:52+00:00",
-      "consecutive_failures": 3,
+      "last_check": "2026-06-25T21:13:09+00:00",
+      "consecutive_failures": 127,
       "service": "tradingview"
     },
     "mcp:tradingview_desktop": {
       "ok": true,
       "msg": "binary probe OK (node)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "tradingview_desktop"
     },
     "mcp:markitdown": {
       "ok": true,
       "msg": "binary probe OK (markitdown-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "markitdown"
     },
     "mcp:liteparse": {
       "ok": true,
       "msg": "binary probe OK (liteparse-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "liteparse"
     },
     "mcp:open_notebook": {
       "ok": true,
       "msg": "HTTP 200 from http://127.0.0.1:5055/api/notebooks",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "open_notebook"
     },
     "mcp:research_project": {
       "ok": true,
       "msg": "binary probe OK (research-project-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "research_project"
     },
     "mcp:voxcpm": {
       "ok": false,
       "msg": "binary probe exit 1: Traceback (most recent call last):   File \"<frozen runpy>\", line 198, in _run_mo",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 1,
       "service": "voxcpm"
     },
     "mcp:source_credibility": {
       "ok": true,
       "msg": "binary probe OK (source-credibility-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "source_credibility"
     },
     "mcp:time_series": {
       "ok": true,
       "msg": "binary probe OK (time-series-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "time_series"
     },
     "mcp:tasks": {
       "ok": true,
       "msg": "binary probe OK (tasks-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "tasks"
     },
     "mcp:google_workspace": {
       "ok": true,
       "msg": "binary probe OK (google-workspace-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "google_workspace"
     },
     "mcp:forge_mcp": {
       "ok": true,
       "msg": "binary probe OK (forge-mcp.exe)",
-      "last_check": "2026-06-25T06:13:52+00:00",
+      "last_check": "2026-06-25T21:13:09+00:00",
       "consecutive_failures": 0,
       "service": "forge_mcp"
+    },
+    "mcp:qmd": {
+      "ok": true,
+      "msg": "binary probe OK (qmd-mcp.cmd)",
+      "last_check": "2026-06-25T21:13:09+00:00",
+      "consecutive_failures": 0,
+      "service": "qmd"
     }
   },
   "recovery_history": [
     {
-      "ts": "2026-06-25T05:26:52+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:27:17+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:27:17+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:27:17+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:27:17+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:28:47+00:00",
-      "service": "gateway",
-      "action": "restart",
-      "ok": false,
-      "msg": "restarted but probe still failing after 25s: URLError: [WinError 10061] No connection could be made because the target machine actively refused it"
-    },
-    {
-      "ts": "2026-06-25T05:28:52+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:29:17+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:29:17+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:29:17+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:29:17+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:30:15+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:32:29+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:32:29+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:32:29+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:32:30+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:34:49+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:35:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:35:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:35:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:35:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:36:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:37:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:37:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:37:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:37:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:38:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:39:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:39:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:39:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:39:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:40:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:41:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:41:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:41:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:41:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:42:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:43:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:43:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:43:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:43:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:44:49+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:45:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:45:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:45:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:45:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:46:49+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:47:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:47:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:47:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:47:49+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:48:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:49:50+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:49:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:49:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:49:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:50:49+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:51:48+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:51:48+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:51:48+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:51:48+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:52:48+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:53:49+00:00",
-      "service": "markitdown",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:53:49+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:53:49+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:53:49+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:54:49+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:55:52+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:55:52+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:55:52+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:56:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:57:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:57:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:57:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:58:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T05:59:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:59:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T05:59:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:00:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T06:01:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:01:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:01:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:02:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T06:03:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:03:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:03:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:04:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T06:05:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:05:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:05:50+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:06:50+00:00",
-      "service": "tradingview",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
-    },
-    {
-      "ts": "2026-06-25T06:06:53+00:00",
-      "service": "voxcpm",
-      "action": "recover",
-      "ok": true,
-      "msg": "killed 1, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
-    },
-    {
-      "ts": "2026-06-25T06:07:50+00:00",
-      "service": "liteparse",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:07:50+00:00",
-      "service": "source_credibility",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:07:53+00:00",
-      "service": "forge_mcp",
-      "action": "recover",
-      "ok": false,
-      "msg": "killed 1, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
-    },
-    {
-      "ts": "2026-06-25T06:08:50+00:00",
+      "ts": "2026-06-25T18:11:02+00:00",
       "service": "tradingview",
       "action": "recover",
       "ok": false,
       "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
     },
     {
-      "ts": "2026-06-25T06:08:50+00:00",
+      "ts": "2026-06-25T18:11:08+00:00",
       "service": "voxcpm",
       "action": "recover",
       "ok": true,
-      "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
     },
     {
-      "ts": "2026-06-25T06:12:52+00:00",
+      "ts": "2026-06-25T18:15:03+00:00",
       "service": "tradingview",
       "action": "recover",
       "ok": false,
       "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
     },
     {
-      "ts": "2026-06-25T06:12:52+00:00",
+      "ts": "2026-06-25T18:15:09+00:00",
       "service": "voxcpm",
       "action": "recover",
       "ok": true,
-      "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
     },
     {
-      "ts": "2026-06-25T16:24:56+00:00",
-      "service": "gateway",
-      "action": "restart",
+      "ts": "2026-06-25T18:19:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:19:09+00:00",
+      "service": "voxcpm",
+      "action": "recover",
       "ok": true,
-      "msg": "restarted (killed=0, attempt=4); HTTP 200, PID ? unverified"
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:23:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:23:09+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:27:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:27:09+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:31:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:31:09+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:35:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:35:10+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:39:03+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:39:10+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:43:05+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:43:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:47:04+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:47:11+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:51:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:51:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:55:05+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:55:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T18:59:05+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T18:59:11+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:03:05+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:03:11+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:07:05+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:07:11+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:11:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:11:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:15:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:15:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:19:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:19:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:23:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:23:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:27:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:27:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:31:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:31:12+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:35:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:35:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:39:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:39:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:43:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:43:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:47:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:47:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:51:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:51:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:55:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:55:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T19:59:06+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T19:59:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:03:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:03:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:07:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:07:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:11:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:11:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:15:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:15:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:19:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:19:13+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:23:07+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:23:14+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:27:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:27:16+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:31:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:31:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:35:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:35:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:39:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:39:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:43:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:43:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:47:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:47:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:51:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:51:15+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:55:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:55:14+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T20:58:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T20:58:15+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:00:08+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:00:15+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:02:09+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:02:16+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:04:11+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:04:17+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:06:09+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:06:16+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:08:09+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:08:16+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:10:09+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:10:15+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T21:12:09+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T21:12:15+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes 0.17.0\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
     }
   ],
   "dependency_map": {
@@ -876,10 +883,10 @@
     "wsl": 0,
     "honcho": 0,
     "open_notebook": 0,
-    "memory_tiers": 151,
+    "memory_tiers": 0,
     "disk_space": 0,
     "heartbeat": 0,
-    "mcp:tradingview": 3,
+    "mcp:tradingview": 127,
     "mcp:tradingview_desktop": 0,
     "mcp:markitdown": 0,
     "mcp:liteparse": 0,
@@ -890,10 +897,11 @@
     "mcp:time_series": 0,
     "mcp:tasks": 0,
     "mcp:google_workspace": 0,
-    "mcp:forge_mcp": 0
+    "mcp:forge_mcp": 0,
+    "mcp:qmd": 0
   },
   "recovery_attempts": {
-    "mcp:tradingview": 2,
+    "mcp:tradingview": 65,
     "mcp:research_project": 59,
     "mcp:google_workspace": 59,
     "gateway": 9,
@@ -903,6 +911,6 @@
     "mcp:forge_mcp": 65,
     "mcp:voxcpm": 0
   },
-  "last_alert": "2026-06-25T16:25:27+00:00",
-  "alert_fingerprint": "mcp:tradingview,mcp:voxcpm,memory_tiers"
+  "last_alert": "2026-06-25T17:06:55+00:00",
+  "alert_fingerprint": "mcp:tradingview,mcp:voxcpm"
 }

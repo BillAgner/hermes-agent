@@ -19,6 +19,7 @@ agent:
   service_tier: ''
   tool_use_enforcement: auto
   task_completion_guidance: true
+  parallel_tool_call_guidance: true
   environment_probe: true
   environment_hint: ''
   coding_context: auto
@@ -76,6 +77,7 @@ terminal:
   cwd: .
   timeout: 180
   env_passthrough: []
+  home_mode: auto
   shell_init_files: []
   auto_source_bashrc: true
   docker_image: nikolaik/python-nodejs:python3.11-nodejs20
@@ -127,7 +129,9 @@ checkpoints:
   retention_days: 7
   delete_orphans: true
   min_interval_hours: 24
+context_file_max_chars: null
 file_read_max_chars: 100000
+mcp_discovery_timeout: 1.5
 tool_output:
   max_bytes: 50000
   max_lines: 2000
@@ -152,6 +156,18 @@ compression:
   protect_first_n: 3
   abort_on_summary_failure: false
   codex_gpt55_autoraise: true
+kanban:
+  dispatch_in_gateway: true
+  dispatch_interval_seconds: 60
+  failure_limit: 2
+  worker_log_rotate_bytes: 2097152
+  worker_log_backup_count: 1
+  orchestrator_profile: ''
+  default_assignee: ''
+  max_in_progress_per_profile: null
+  auto_decompose: true
+  auto_decompose_per_tick: 3
+  dispatch_stale_timeout_seconds: 14400
 prompt_caching:
   cache_ttl: 5m
 openrouter:
@@ -319,6 +335,7 @@ display:
   tui_agents_nudge: true
   bell_on_complete: false
   show_reasoning: false
+  memory_notifications: 'on'
   streaming: true
   timestamps: false
   final_response_markdown: strip
@@ -333,6 +350,7 @@ display:
   skin: default
   language: en
   tui_status_indicator: kaomoji
+  cli_refresh_interval: 1.0
   user_message_preview:
     first_lines: 2
     last_lines: 2
@@ -340,6 +358,7 @@ display:
   tool_progress_command: false
   tool_progress_overrides: {}
   tool_preview_length: 0
+  tool_progress_grouping: accumulate
   ephemeral_system_ttl: 0
   platforms:
     telegram:
@@ -407,7 +426,7 @@ tts:
   providers:
     voxcpm:
       type: command
-      command: C:\Data\Hermes 0.17.0\venv\Scripts\python.exe C:\Data\Hermes\scripts\voxcpm_client.py
+      command: C:\Data\Hermes 0.17.0\venv\Scripts\python.exe C:\Data\Hermes 0.17.0\scripts\voxcpm_client.py
         {input_path} {output_path}
       max_text_length: 4096
       output_format: wav
@@ -460,6 +479,7 @@ delegation:
   child_timeout_seconds: 0
   reasoning_effort: ''
   max_concurrent_children: 3
+  max_async_children: 3
   max_spawn_depth: 1
   orchestrator_enabled: true
   subagent_auto_approve: false
@@ -468,7 +488,7 @@ goals:
   max_turns: 20
 skills:
   external_dirs:
-  - C:\Data\Hermes\skills
+  - C:\Data\Hermes 0.17.0\skills
   template_vars: true
   inline_shell: false
   inline_shell_timeout: 10
@@ -481,6 +501,7 @@ curator:
   min_idle_hours: 2
   stale_after_days: 30
   archive_after_days: 90
+  consolidate: false
   prune_builtins: true
   backup:
     enabled: true
@@ -525,6 +546,8 @@ telegram:
   reactions: false
   channel_prompts: {}
   allowed_chats: ''
+  extra:
+    rich_messages: true
 mattermost:
   require_mention: true
   free_response_channels: ''
@@ -541,16 +564,10 @@ approvals:
   mcp_reload_confirm: true
   destructive_slash_confirm: false
 command_allowlist:
-- overwrite project env/config file
-- script execution via -e/-c flag
-- stop/restart hermes gateway (kills running agents)
-- execute_code
-- script execution via heredoc
 - recursive delete
-- delete in root path
-- shell command via -c/-lc flag
-- sudo with combined-flag privilege escalation
+- script execution via -e/-c flag
 quick_commands: {}
+platform_hints: {}
 hooks: {}
 hooks_auto_accept: false
 personalities: {}
@@ -586,20 +603,14 @@ security:
   acked_advisories: []
   allow_lazy_installs: false
 cron:
+  provider: ''
+  chronos:
+    portal_url: https://portal.nousresearch.com
+    callback_url: ''
+    expected_audience: ''
+    nas_jwks_url: ''
   wrap_response: true
   max_parallel_jobs: null
-kanban:
-  dispatch_in_gateway: true
-  dispatch_interval_seconds: 60
-  failure_limit: 2
-  worker_log_rotate_bytes: 2097152
-  worker_log_backup_count: 1
-  orchestrator_profile: ''
-  default_assignee: ''
-  max_in_progress_per_profile: null
-  auto_decompose: true
-  auto_decompose_per_tick: 3
-  dispatch_stale_timeout_seconds: 14400
 code_execution:
   mode: project
   timeout: 300
@@ -622,6 +633,8 @@ model_catalog:
 network:
   force_ipv4: false
 gateway:
+  message_timestamps:
+    enabled: false
   strict: false
   media_delivery_allow_dirs: []
   trust_recent_files: true
@@ -764,8 +777,15 @@ mcp_servers:
   tradingview_desktop:
     command: node
     args:
-    - C:/Data/Hermes/~/tradingview-mcp/src/server.js
+    - C:/Data/Hermes 0.17.0/~/tradingview-mcp/src/server.js
     enabled: true
+  qmd:
+    command: C:\Data\Hermes_0.17.0\scripts\qmd-mcp.cmd
+    args:
+    - ''
+    enabled: true
+    timeout: 180
+    connect_timeout: 120
   markitdown:
     command: C:\Data\Hermes 0.17.0\venv\Scripts\markitdown-mcp.exe
     enabled: true
@@ -783,7 +803,7 @@ mcp_servers:
     - ''
     enabled: true
   voxcpm:
-    command: C:\Data\Hermes\~\VoxCPM\.venv\Scripts\voxcpm-mcp.exe
+    command: C:\Data\Hermes 0.17.0\~\VoxCPM\.venv\Scripts\voxcpm-mcp.exe
     enabled: true
     timeout: 300
     connect_timeout: 60
@@ -793,7 +813,7 @@ mcp_servers:
       VOXCPM_DENOISER_ID: iic/speech_zipenhancer_ans_multiloss_16k_base
       VOXCPM_DEVICE: auto
       VOXCPM_OPTIMIZE: '0'
-      VOXCPM_OUTPUT_DIR: C:\Data\Hermes\audio_cache\voxcpm
+      VOXCPM_OUTPUT_DIR: C:\Data\Hermes 0.17.0\audio_cache\voxcpm
       VOXCPM_DEFAULT_VOICE_DESCRIPTION: calm English male voice
   source_credibility:
     command: C:\Data\Hermes 0.17.0\venv\Scripts\source-credibility-mcp.exe
@@ -828,21 +848,21 @@ plugins:
   - web-tavily
 GOOGLE_OAUTH_SCOPES: https://www.googleapis.com/auth/gmail.modify,https://www.googleapis.com/auth/gmail.send,https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/drive,https://www.googleapis.com/auth/contacts,https://www.googleapis.com/auth/spreadsheets,https://www.googleapis.com/auth/documents
 
-# Ã¢â€â‚¬Ã¢â€â‚¬ Fallback Model Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+# ── Fallback Model ────────────────────────────────────────────────────
 # Automatic provider failover when primary is unavailable.
 # Uncomment and configure to enable. Triggers on rate limits (429),
 # overload (529), service errors (503), or connection failures.
 #
 # Supported providers:
-#   openrouter   (OPENROUTER_API_KEY)  Ã¢â‚¬â€ routes to any model
-#   openai-codex (OAuth Ã¢â‚¬â€ hermes auth) Ã¢â‚¬â€ OpenAI Codex
-#   nous         (OAuth Ã¢â‚¬â€ hermes auth) Ã¢â‚¬â€ Nous Portal
-#   zai          (ZAI_API_KEY)         Ã¢â‚¬â€ Z.AI / GLM
-#   kimi-coding  (KIMI_API_KEY)        Ã¢â‚¬â€ Kimi / Moonshot
-#   kimi-coding-cn (KIMI_CN_API_KEY)   Ã¢â‚¬â€ Kimi / Moonshot (China)
-#   minimax      (MINIMAX_API_KEY)     Ã¢â‚¬â€ MiniMax
-#   minimax-cn   (MINIMAX_CN_API_KEY)  Ã¢â‚¬â€ MiniMax (China)
-#   bedrock      (AWS IAM / boto3)     Ã¢â‚¬â€ AWS Bedrock (Converse API)
+#   openrouter   (OPENROUTER_API_KEY)  — routes to any model
+#   openai-codex (OAuth — hermes auth) — OpenAI Codex
+#   nous         (OAuth — hermes auth) — Nous Portal
+#   zai          (ZAI_API_KEY)         — Z.AI / GLM
+#   kimi-coding  (KIMI_API_KEY)        — Kimi / Moonshot
+#   kimi-coding-cn (KIMI_CN_API_KEY)   — Kimi / Moonshot (China)
+#   minimax      (MINIMAX_API_KEY)     — MiniMax
+#   minimax-cn   (MINIMAX_CN_API_KEY)  — MiniMax (China)
+#   bedrock      (AWS IAM / boto3)     — AWS Bedrock (Converse API)
 #
 # For custom OpenAI-compatible endpoints, add base_url and key_env.
 #
