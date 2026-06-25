@@ -14,7 +14,7 @@ def should_use_color() -> bool:
         return False
     if os.environ.get("TERM") == "dumb":
         return False
-    if not sys.stdout.isatty():
+    if sys.stdout is None or not sys.stdout.isatty():
         return False
     return True
 

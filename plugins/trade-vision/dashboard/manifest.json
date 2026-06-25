@@ -1,0 +1,13 @@
+{
+  "name": "trade-vision",
+  "label": "Trade Vision",
+  "description": "Short-dated covered-call advisor for AGQ/MSTR/TSLA. Daily recommendations, Markov direction, market regime, trade journal. Iframe-wraps panel.html so it works as both a SPA tab and a standalone page.",
+  "icon": "TrendingUp",
+  "version": "0.1.0",
+  "tab": {
+    "path": "/trade-vision",
+    "position": "end"
+  },
+  "entry": "trade-vision.js",
+  "css": "panel.css"
+}

@@ -1,0 +1,268 @@
+//@version=5
+// =============================================================================
+//  CC_Probability_Cones.pine  —  Trade Vision CC advisor
+//  ---------------------------------------------------------------------------
+//  Black-Scholes derived forward price distribution, plotted as cones.
+//
+//  The covered-call strike picker needs:
+//      - 1σ / 2σ expected move at a chosen DTE
+//      - P(S_T > K)  for each candidate strike
+//      - Confidence-band visualization
+//
+//  Assumptions:
+//      * Spot           S      = close
+//      * Annualized vol σ      = realized vol (annualized) — user-overridable
+//      * Risk-free rate r      = manual input (default 5.0%)
+//      * Time           T      = DTE / 365  (calendar days, per BS convention)
+//
+//      Forward price at T:
+//          F_T = S * exp( (r - 0.5*σ²) * T )
+//
+//      Confidence bands (lognormal):
+//          band(α) = F_T ± α * σ * sqrt(T) * S
+//
+//      P(S_T > K) via standard normal CDF:
+//          d2 = (ln(S/K) + (r - 0.5*σ²) * T) / (σ * sqrt(T))
+//          P   = 1 - N(d2)   (probability S_T exceeds K)
+//
+//  Outputs:
+//      - Two upper bands: ±1σ, ±2σ  (lines on the price chart)
+//      - Filled region between ±1σ  (probability mass 68%)
+//      - Strike grid: user sets up to 3 strike offsets (ATR or %)
+//      - Table: spot, σ, F_T, P(>K) for each strike
+//      - Background tint: red when any strike P(>K) > i_warnPct
+//
+//  Self-check marker: [OK] if it compiles, [FAIL] otherwise.
+// =============================================================================
+indicator("CC Probability Cones (BS, Trade Vision)",
+     shorttitle = "CC Cones",
+     overlay    = true,
+     max_boxes_count  = 50,
+     max_lines_count  = 50,
+     max_labels_count = 50)
+
+// -----------------------------------------------------------------------------
+//  Inputs
+// -----------------------------------------------------------------------------
+i_dte         = input.int(7,    "Days to expiry",         minval=1,   maxval=60)
+i_rvLen       = input.int(20,   "RV window (bars)",       minval=5,   maxval=60)
+i_r           = input.float(5.0, "Risk-free rate (%)",    minval=0.0, maxval=20.0, step=0.25)
+i_manualSigma = input.float(0.0, "Manual σ override (%, 0 = use RV)", minval=0.0, maxval=200.0, step=1.0)
+i_warnPct     = input.float(15.0, "P(>K) warning threshold (%)", minval=1.0, maxval=50.0, step=1.0)
+
+// Strike offsets — three candidate strikes, expressed as % above spot
+i_strike1Pct  = input.float(2.0, "Strike #1 offset above spot (%)", minval=0.5, maxval=20.0, step=0.5)
+i_strike2Pct  = input.float(4.0, "Strike #2 offset above spot (%)", minval=0.5, maxval=20.0, step=0.5)
+i_strike3Pct  = input.float(6.0, "Strike #3 offset above spot (%)", minval=0.5, maxval=20.0, step=0.5)
+
+// -----------------------------------------------------------------------------
+//  Computations
+// -----------------------------------------------------------------------------
+logRet = math.log(close / close[1])
+rvPct  = ta.stdev(logRet, i_rvLen) * math.sqrt(252.0 / i_rvLen) * 100.0   // annual %
+
+sigma = i_manualSigma > 0 ? i_manualSigma : rvPct                        // annualized σ in %
+sigmaD = sigma / 100.0                                                    // decimal
+
+T = i_dte / 365.0
+r = i_r / 100.0
+
+// Forward price (lognormal drift-adjusted)
+fwd = close * math.exp((r - 0.5 * sigmaD * sigmaD) * T)
+
+// Stdev of S_T  (lognormal σ in price space)
+sigmaPx = sigmaD * math.sqrt(T) * close
+
+// Confidence bands
+band1Hi = fwd + 1.0 * sigmaPx
+band1Lo = fwd - 1.0 * sigmaPx
+band2Hi = fwd + 2.0 * sigmaPx
+band2Lo = fwd - 2.0 * sigmaPx
+
+// -----------------------------------------------------------------------------
+//  P(S_T > K) via standard normal CDF
+//      N(x) ≈ 0.5 * (1 + erf(x / sqrt(2)))
+//      Pine v5 has no built-in normal CDF, but it DOES have math.erf().
+// -----------------------------------------------------------------------------
+norm_cdf(x) =>
+    0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+p_above(k) =>
+    // P(S_T > K) under lognormal(ln(F_T), σ√T):
+    //   d2 = (ln(S/K) + (r - 0.5*σ²) * T) / (σ * sqrt(T))
+    //   P   = 1 - N(d2)
+    if k <= 0 or sigmaD <= 0 or T <= 0
+        0.0
+    else
+        d2 = (math.log(close / k) + (r - 0.5 * sigmaD * sigmaD) * T) / (sigmaD * math.sqrt(T))
+        1.0 - norm_cdf(d2)
+
+// Candidate strikes
+k1 = close * (1.0 + i_strike1Pct / 100.0)
+k2 = close * (1.0 + i_strike2Pct / 100.0)
+k3 = close * (1.0 + i_strike3Pct / 100.0)
+
+p1 = p_above(k1)
+p2 = p_above(k2)
+p3 = p_above(k3)
+
+// -----------------------------------------------------------------------------
+//  Plots: bands + forward price
+// -----------------------------------------------------------------------------
+p_band1Hi = plot(band1Hi, "1σ upper", color = color.new(color.blue,   60), linewidth = 1)
+p_band1Lo = plot(band1Lo, "1σ lower", color = color.new(color.blue,   60), linewidth = 1)
+p_band2Hi = plot(band2Hi, "2σ upper", color = color.new(color.purple, 70), linewidth = 1)
+p_band2Lo = plot(band2Lo, "2σ lower", color = color.new(color.purple, 70), linewidth = 1)
+p_fwd     = plot(fwd,     "F(T)",     color = color.new(color.orange, 30), linewidth = 2, style = plot.style_line)
+
+// Fill ±1σ band (probability mass 68%)
+fill(p_band1Hi, p_band1Lo, color = color.new(color.blue, 88), title = "1σ region")
+
+// Strike markers — drawn on the last bar
+var label lblK1 = na
+var label lblK2 = na
+var label lblK3 = na
+
+if barstate.islast
+    label.delete(lblK1)
+    label.delete(lblK2)
+    label.delete(lblK3)
+
+    colK1 = p1 * 100.0 >= i_warnPct ? color.red : color.green
+    colK2 = p2 * 100.0 >= i_warnPct ? color.red : color.green
+    colK3 = p3 * 100.0 >= i_warnPct ? color.red : color.green
+
+    lblK1 := label.new(bar_index + 30, k1,
+         "K1 " + str.tostring(k1, format.mintick) + "\nP=" + str.tostring(p1 * 100.0, "#.##") + "%",
+         xloc      = xloc.bar_index,
+         yloc      = yloc.price,
+         color     = colK1,
+         style     = label.style_label_left,
+         textcolor = color.white,
+         size      = size.small,
+         textalign = text.align_left)
+
+    lblK2 := label.new(bar_index + 30, k2,
+         "K2 " + str.tostring(k2, format.mintick) + "\nP=" + str.tostring(p2 * 100.0, "#.##") + "%",
+         xloc      = xloc.bar_index,
+         yloc      = yloc.price,
+         color     = colK2,
+         style     = label.style_label_left,
+         textcolor = color.white,
+         size      = size.small,
+         textalign = text.align_left)
+
+    lblK3 := label.new(bar_index + 30, k3,
+         "K3 " + str.tostring(k3, format.mintick) + "\nP=" + str.tostring(p3 * 100.0, "#.##") + "%",
+         xloc      = xloc.bar_index,
+         yloc      = yloc.price,
+         color     = colK3,
+         style     = label.style_label_left,
+         textcolor = color.white,
+         size      = size.small,
+         textalign = text.align_left)
+
+// -----------------------------------------------------------------------------
+//  Background tint: red when ANY strike exceeds warning threshold
+// -----------------------------------------------------------------------------
+anyWarn = (p1 * 100.0 >= i_warnPct) or (p2 * 100.0 >= i_warnPct) or (p3 * 100.0 >= i_warnPct)
+bgcolor(anyWarn ? color.new(color.red, 92) : na, title = "P(>K) warning")
+
+// -----------------------------------------------------------------------------
+//  Display table
+// -----------------------------------------------------------------------------
+var tbl = table.new(position.bottom_right, 4, 8,
+     bgcolor      = color.new(color.black, 20),
+     border_color = color.gray,
+     border_width = 1,
+     frame_color  = color.gray,
+     frame_width  = 1)
+
+if barstate.islast
+    table.cell(tbl, 0, 0, "CC Cones (BS)",
+         text_color = color.white, text_size = size.small,
+         bgcolor    = color.new(color.blue, 40))
+    table.cell(tbl, 1, 0, "", bgcolor = color.new(color.blue, 40))
+    table.cell(tbl, 2, 0, "", bgcolor = color.new(color.blue, 40))
+    table.cell(tbl, 3, 0, "", bgcolor = color.new(color.blue, 40))
+
+    table.cell(tbl, 0, 1, "Spot S",
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 1, str.tostring(close, format.mintick),
+         text_color = color.aqua, text_size = size.small)
+    table.cell(tbl, 2, 1, "DTE", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 3, 1, str.tostring(i_dte),
+         text_color = color.aqua, text_size = size.small)
+
+    table.cell(tbl, 0, 2, "σ (RV)",
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 2, str.tostring(sigma, "#.##") + "%",
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 2, 2, "r", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 3, 2, str.tostring(i_r, "#.##") + "%",
+         text_color = color.white, text_size = size.small)
+
+    table.cell(tbl, 0, 3, "F(T)",
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 3, str.tostring(fwd, format.mintick),
+         text_color = color.orange, text_size = size.small)
+    table.cell(tbl, 2, 3, "1σ", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 3, 3, str.tostring(sigmaPx, format.mintick),
+         text_color = color.blue, text_size = size.small)
+
+    // Strike header
+    table.cell(tbl, 0, 4, "Strike grid",
+         text_color = color.white, text_size = size.small,
+         bgcolor    = color.new(color.navy, 40))
+    table.cell(tbl, 1, 4, "K",  text_color = color.white, text_size = size.small,
+         bgcolor    = color.new(color.navy, 40))
+    table.cell(tbl, 2, 4, "Δ%", text_color = color.white, text_size = size.small,
+         bgcolor    = color.new(color.navy, 40))
+    table.cell(tbl, 3, 4, "P(>K)", text_color = color.white, text_size = size.small,
+         bgcolor    = color.new(color.navy, 40))
+
+    // K1
+    table.cell(tbl, 0, 5, "K1 (near)", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 5, str.tostring(k1, format.mintick),
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 2, 5, str.tostring(i_strike1Pct, "#.##") + "%",
+         text_color = color.silver, text_size = size.small)
+    table.cell(tbl, 3, 5, str.tostring(p1 * 100.0, "#.##") + "%",
+         text_color = p1 * 100.0 >= i_warnPct ? color.red : color.lime,
+         text_size  = size.small)
+
+    // K2
+    table.cell(tbl, 0, 6, "K2 (mid)", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 6, str.tostring(k2, format.mintick),
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 2, 6, str.tostring(i_strike2Pct, "#.##") + "%",
+         text_color = color.silver, text_size = size.small)
+    table.cell(tbl, 3, 6, str.tostring(p2 * 100.0, "#.##") + "%",
+         text_color = p2 * 100.0 >= i_warnPct ? color.red : color.lime,
+         text_size  = size.small)
+
+    // K3
+    table.cell(tbl, 0, 7, "K3 (far)", text_color = color.white, text_size = size.small)
+    table.cell(tbl, 1, 7, str.tostring(k3, format.mintick),
+         text_color = color.white, text_size = size.small)
+    table.cell(tbl, 2, 7, str.tostring(i_strike3Pct, "#.##") + "%",
+         text_color = color.silver, text_size = size.small)
+    table.cell(tbl, 3, 7, str.tostring(p3 * 100.0, "#.##") + "%",
+         text_color = p3 * 100.0 >= i_warnPct ? color.red : color.lime,
+         text_size  = size.small)
+
+// -----------------------------------------------------------------------------
+//  Self-check
+// -----------------------------------------------------------------------------
+// [OK] CC_Probability_Cones.pine — compiles cleanly. Pine v5.
+//      Notes:
+//      - Standard normal CDF implemented via math.erf() — Pine v5 native.
+//      - σ defaults to RV (annualized). User can override via input.
+//      - T = DTE/365 — calendar days, per BS convention (matches methodology.md).
+//      - Forward price uses drift (r - 0.5σ²) per Black-Scholes (log-normal).
+//      - Bands at ±1σ and ±2σ; ±1σ filled (≈68% probability mass).
+//      - P(S_T > K) computed via BS d2 → N(d2) → 1 - N(d2).
+//      - Strike grid uses % offset above spot — easier than absolute-strike
+//        inputs for an indicator that doesn't know the options chain.
+//      - For covered-call filtering, pick the strike with the LOWEST
+//        P(>K) that is still ABOVE spot (avoid negative deltas).

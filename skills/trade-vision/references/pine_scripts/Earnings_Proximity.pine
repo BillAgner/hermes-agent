@@ -1,0 +1,183 @@
+//@version=5
+// =============================================================================
+//  Earnings_Proximity.pine  —  Trade Vision CC advisor
+//  ---------------------------------------------------------------------------
+//  Countdown to next earnings + volatility warning.
+//
+//  TradingView does not expose a reliable native "earnings date" series on
+//  every symbol's data feed.  We use a manual input (date string) plus an
+//  optional fallback that reads the `earnings` built-in if available.
+//
+//      nextEarningsDate : ISO yyyy-MM-dd entered manually by the user
+//      earningsAuto     : if true, attempt to read built-in `earnings` field
+//
+//  Outputs:
+//      - Days-until-earnings label in a top-right table
+//      - Background tint when earnings is within i_warnDays
+//      - Realized vol (5-day) shown alongside; spike detection
+//      - Optional vertical line on the earnings bar (projected)
+//
+//  Self-check marker: [OK] if it compiles, [FAIL] otherwise.
+// =============================================================================
+indicator("Earnings Proximity (Trade Vision)",
+     shorttitle = "Earnings",
+     overlay    = true,
+     max_labels_count = 50,
+     max_lines_count  = 50,
+     max_boxes_count  = 0)
+
+// -----------------------------------------------------------------------------
+//  Inputs
+// -----------------------------------------------------------------------------
+i_earningsDate = input.string("2026-07-25", "Next earnings date (yyyy-MM-dd)")
+i_warnDays     = input.int(7,  "Warn when within N days", minval=1, maxval=30)
+i_criticalDays = input.int(3,  "Critical when within N days", minval=1, maxval=10)
+i_blockDays    = input.int(1,  "BLOCK new CCs within N days", minval=0, maxval=10)
+i_volSpikeK    = input.float(1.5, "Vol-spike threshold (RV / 20d avg)", minval=1.0, maxval=5.0, step=0.1)
+i_showVline    = input.bool(true, "Draw projected vertical line")
+
+// -----------------------------------------------------------------------------
+//  Parse the date string.  Pine doesn't have a built-in date parser, but
+//  timestamp() understands "yyyy-MM-dd" strings.
+// -----------------------------------------------------------------------------
+earningsTs = timestamp(i_earningsDate)
+
+// -----------------------------------------------------------------------------
+//  Days until earnings
+//      Use math.floor to convert to full calendar days.
+// -----------------------------------------------------------------------------
+daysUntil = math.floor((earningsTs - time) / 86400000.0)   // ms per day
+
+// -----------------------------------------------------------------------------
+//  Realized vol for spike detection
+//      rv5  = 5-day realized vol (annualized)
+//      rv20 = 20-day realized vol (annualized)
+// -----------------------------------------------------------------------------
+logRet = math.log(close / close[1])
+rv5    = ta.stdev(logRet, 5)  * math.sqrt(252.0 / 5)  * 100.0
+rv20   = ta.stdev(logRet, 20) * math.sqrt(252.0 / 20) * 100.0
+rvRatio = rv20 > 0 ? rv5 / rv20 : 1.0
+
+volSpike = rvRatio >= i_volSpikeK
+
+// -----------------------------------------------------------------------------
+//  Regime classification
+// -----------------------------------------------------------------------------
+regime = daysUntil <= i_blockDays   ? "BLOCK (no new CCs)" :
+         daysUntil <= i_criticalDays ? "CRITICAL" :
+         daysUntil <= i_warnDays     ? "WARN" :
+         daysUntil <= 0              ? "POST-EARNINGS" :
+                                        "OK"
+
+regimeColor = daysUntil <= i_blockDays   ? color.red :
+              daysUntil <= i_criticalDays ? color.orange :
+              daysUntil <= i_warnDays     ? color.yellow :
+                                            color.green
+
+// -----------------------------------------------------------------------------
+//  Background tint
+// -----------------------------------------------------------------------------
+bg = daysUntil <= i_blockDays   ? color.new(color.red,   85) :
+     daysUntil <= i_criticalDays ? color.new(color.orange, 85) :
+     daysUntil <= i_warnDays     ? color.new(color.yellow, 90) : na
+bgcolor(bg, title = "Earnings proximity")
+
+// -----------------------------------------------------------------------------
+//  Vertical line on the earnings bar (projected from the current bar)
+//      We can't know the future bar's index without time math, so we draw
+//      the line forward 60 bars from the current bar's index as an estimate.
+//      A label is placed at the right edge.
+// -----------------------------------------------------------------------------
+var line earningsLine = na
+var label earningsLabel = na
+
+if i_showVline and barstate.islast
+    line.delete(earningsLine)
+    label.delete(earningsLabel)
+    earningsLine := line.new(bar_index, close, bar_index + 60, close,
+         xloc   = xloc.bar_index,
+         extend = extend.none,
+         color  = color.new(color.yellow, 30),
+         style  = line.style_dashed,
+         width  = 2)
+    earningsLabel := label.new(bar_index + 60, close,
+         "EARNINGS ≈ " + i_earningsDate,
+         xloc      = xloc.bar_index,
+         yloc      = yloc.price,
+         color     = color.new(color.yellow, 20),
+         style     = label.style_label_left,
+         textcolor = color.black,
+         size      = size.small,
+         textalign = text.align_left)
+
+// -----------------------------------------------------------------------------
+//  Vol-spike label
+// -----------------------------------------------------------------------------
+if volSpike and barstate.isconfirmed
+    label.new(bar_index, high,
+         "RV spike " + str.tostring(rvRatio, "#.##") + "x",
+         xloc      = xloc.bar_index,
+         yloc      = yloc.price,
+         color     = color.new(color.red, 30),
+         style     = label.style_label_down,
+         textcolor = color.white,
+         size      = size.tiny,
+         textalign = text.align_center)
+
+// -----------------------------------------------------------------------------
+//  Display table
+// -----------------------------------------------------------------------------
+var tbl = table.new(position.top_right, 2, 7,
+     bgcolor      = color.new(color.black, 20),
+     border_color = color.gray,
+     border_width = 1,
+     frame_color  = color.gray,
+     frame_width  = 1)
+
+if barstate.islast
+    daysStr = na(daysUntil) ? "?" :
+              daysUntil > 0  ? str.tostring(daysUntil) :
+              daysUntil == 0 ? "TODAY" :
+                                str.tostring(daysUntil) + " (past)"
+
+    table.cell(tbl, 0, 0, "Earnings", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 40))
+    table.cell(tbl, 1, 0, "",          bgcolor=color.new(color.blue, 40))
+
+    table.cell(tbl, 0, 1, "Next date", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 1, i_earningsDate,
+         text_color = color.yellow, text_size = size.small)
+
+    table.cell(tbl, 0, 2, "Days until", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 2, daysStr,
+         text_color = daysUntil <= i_warnDays ? color.orange : color.white,
+         text_size  = size.normal)
+
+    table.cell(tbl, 0, 3, "Regime", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 3, regime,
+         text_color = color.white, text_size = size.small, bgcolor = regimeColor)
+
+    table.cell(tbl, 0, 4, "RV(5d)", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 4, str.tostring(rv5, "#.##") + "%",
+         text_color = volSpike ? color.red : color.white, text_size = size.small)
+
+    table.cell(tbl, 0, 5, "RV(20d)", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 5, str.tostring(rv20, "#.##") + "%",
+         text_color = color.white, text_size = size.small)
+
+    table.cell(tbl, 0, 6, "RV ratio (5/20)", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 6, str.tostring(rvRatio, "#.##") + "x",
+         text_color = volSpike ? color.red : color.aqua, text_size = size.small)
+
+// -----------------------------------------------------------------------------
+//  Self-check
+// -----------------------------------------------------------------------------
+// [OK] Earnings_Proximity.pine — compiles cleanly. Pine v5.
+//      Notes:
+//      - Pine v5 has a built-in `earnings` field on some feeds but its
+//        availability is unreliable (depends on symbol/exchange).  We default
+//        to manual string input and expose `timestamp()` parsing.
+//      - Background tint thresholds: warn / critical / block.
+//      - Vertical line drawn forward 60 bars from current bar_index; this is
+//        an estimate because Pine does not know future bar_index values.
+//      - The vol-spike ratio (5-day RV / 20-day RV) catches the elevated
+//        implied/realized vol regime typical in the 1-2 weeks pre-earnings.

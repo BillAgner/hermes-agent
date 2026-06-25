@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "maf-mcp"
+version = "0.1.0"
+description = "FastMCP wrapper for Microsoft Agent Framework (MAF) -- exposes Agent.run, workflow execution, and chat-client APIs as MCP tools."
+requires-python = ">=3.10"
+dependencies = [
+    "agent-framework>=1.9.0",
+    "mcp[cli]>=1.0.0",
+]
+
+[project.scripts]
+maf-mcp = "maf_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/maf_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/maf_mcp/__main__.py" = "maf_mcp/__main__.py"
+"src/maf_mcp/server.py" = "maf_mcp/server.py"
+
+[tool.hatch.build.targets.sdist.force-include]
+"src/maf_mcp/__main__.py" = "maf_mcp/__main__.py"
+"src/maf_mcp/server.py" = "maf_mcp/server.py"

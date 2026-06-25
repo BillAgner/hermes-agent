@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Research Briefing</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header>
+  <h1>☀️ Hermes Briefing</h1>
+  <div class="subtitle">
+    Three panels: <strong>morning briefing</strong>, <strong>research syntheses</strong>,
+    <strong>auto-RAG status</strong>. Polls existing public <code>/api/*</code> endpoints.
+  </div>
+  <div class="topbar">
+    <span class="badge empty" id="auth-badge">auth: …</span>
+    <span class="ts" id="last-update">—</span>
+    <button onclick="location.reload()">refresh</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="briefing">📋 Briefing</button>
+  <button class="tab-btn" data-tab="synth">🔍 Syntheses</button>
+  <button class="tab-btn" data-tab="rag">🧠 Auto-RAG</button>
+</nav>
+
+<!-- BRIEFING -->
+<section class="tab-panel" id="tab-briefing">
+  <div class="grid-brief">
+    <div class="card">
+      <h2>📋 Tasks</h2>
+      <div id="brief-tasks">loading…</div>
+    </div>
+    <div class="card">
+      <h2>📅 Calendar (next 24h)</h2>
+      <div id="brief-cal">loading…</div>
+    </div>
+    <div class="card">
+      <h2>📨 Inbox (top 3 unread)</h2>
+      <div id="brief-mail">loading…</div>
+    </div>
+    <div class="card">
+      <h2>🔬 Active research</h2>
+      <div id="brief-research">loading…</div>
+    </div>
+    <div class="card">
+      <h2>🛡 Watchdog</h2>
+      <div id="brief-watchdog">loading…</div>
+    </div>
+    <div class="card">
+      <h2>🏥 Health probes</h2>
+      <div id="brief-health">loading…</div>
+    </div>
+  </div>
+  <p class="footer-tip">
+    Tip: the morning cron (7am local) posts the same digest to Telegram.
+    Manual trigger: <code>python scripts/daily_briefing.py --post</code>
+  </p>
+</section>
+
+<!-- SYNTHESES -->
+<section class="tab-panel hidden" id="tab-synth">
+  <h2>Recent syntheses</h2>
+  <p class="subtitle">Pulled from the project timeline (auto-discovered via <code>/api/research/projects</code>).</p>
+  <div id="synth-recent">loading…</div>
+
+  <h2 style="margin-top: 24px;">Synthesize a new answer</h2>
+  <p class="subtitle">Picks evidence + scores via source-credibility, returns ranked dossier with open questions + follow-ups.</p>
+  <div class="synth-row">
+    <select id="synth-slug"></select>
+    <input id="synth-q" type="text" placeholder="What do you want to know?">
+    <button id="synth-run">Synthesize</button>
+  </div>
+  <div id="synth-result" class="result"></div>
+</section>
+
+<!-- RAG -->
+<section class="tab-panel hidden" id="tab-rag">
+  <h2>Auto-RAG indexer</h2>
+  <p class="subtitle">Mirrors research-project evidence to open-notebook (with embeddings) so <code>on_search</code> finds it.</p>
+  <div id="rag-status">loading…</div>
+  <p class="footer-tip">
+    Manual run: <code>python scripts/auto_rag_sync.py</code> &middot;
+    Cron: nightly at 2am via the <code>auto-rag-sync</code> job. Last-run state at
+    <code>C:\Data\Hermes\health\auto_rag_state.json</code>.
+  </p>
+</section>
+
+<script src="panel.js"></script>
+</body>
+</html>

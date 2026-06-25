@@ -1,0 +1,13 @@
+{
+  "name": "research-briefing",
+  "label": "Briefing",
+  "description": "Daily briefing + recent research syntheses + auto-RAG status. Polls existing /api/* endpoints — no Python backend needed (no restart required).",
+  "icon": "Sun",
+  "version": "0.1.0",
+  "tab": {
+    "path": "/briefing",
+    "position": "end"
+  },
+  "entry": "panel.html",
+  "css": "panel.css"
+}

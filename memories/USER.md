@@ -1,0 +1,6 @@
+§
+Operational: strongly prefers self-healing systems over alert-spam. False-positive alerts are a friction source — he'll point them out ("I'm getting spammed", "I'm not sure if this is what you had in mind"). Wants visible dashboards (browser-facing), not just Telegram pings. Expects the watchdog to actually recover services, not just report. Leverages WSL/Docker when available and encourages doing so.
+§
+When the user needs to run an admin operation themselves (Scheduled Task registration, service control, anything requiring UAC), the deliverable is a single script file on disk + a one-line path, never a multi-step recipe. They explicitly said "I don't want to do any one line command list." The script should self-verify and end with a clear [OK]/[FAIL] line.
+§
+When asked to handle "any other loose ends", Bill wants a concrete inventory + a clear proposal — not vague hedging. He accepts deliberate skips as long as they're named and justified ("left this alone because X" is welcomed; silent omission is not). He approves a batch and expects a single PowerShell script on disk (idempotent, self-verifying with [OK]/[FAIL]/[SKIP]) rather than a multi-step recipe. After completion, he expects a final tally table mapping items to actions taken, plus a "still on your plate" section naming items deliberately left untouched (with reasons) so he can decide next.

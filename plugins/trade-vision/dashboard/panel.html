@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Vision Dashboard</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header>
+  <h1>📈 Trade Vision</h1>
+  <div class="subtitle">
+    Short-dated (0-7 DTE) covered-call advisor for AGQ/MSTR/TSLA.
+    Daily 4:30pm ET pipeline produces strike + exit recommendations backed by
+    Black-Scholes, Monte Carlo, Markov direction, and earnings proximity checks.
+  </div>
+  <div class="topbar">
+    <span class="badge" id="auth-badge">auth: …</span>
+    <span class="ts" id="last-update">—</span>
+    <button onclick="location.reload()">refresh</button>
+  </div>
+</header>
+
+<!-- Top row: market + portfolio -->
+<section class="overview">
+  <div class="card">
+    <h2>📊 Market Regime</h2>
+    <div id="market-regime" class="kv-grid">loading…</div>
+  </div>
+  <div class="card">
+    <h2>💼 Portfolio</h2>
+    <div id="portfolio" class="kv-grid">loading…</div>
+  </div>
+  <div class="card">
+    <h2>📈 Markov Direction</h2>
+    <div id="markov-grid" class="kv-grid">loading…</div>
+  </div>
+</section>
+
+<!-- Main: today's recommendations -->
+<section class="recommendations">
+  <h2>🎯 Today's CC Recommendations</h2>
+  <p class="subtitle">Top 3 candidates per ticker from the latest daily pipeline run.</p>
+  <div id="today-recs">loading…</div>
+</section>
+
+<!-- Trade journal section -->
+<section class="journal">
+  <h2>📒 Trade Journal</h2>
+  <div class="journal-grid">
+    <div class="card">
+      <h3>Open Positions</h3>
+      <div id="journal-open">loading…</div>
+    </div>
+    <div class="card">
+      <h3>Stats</h3>
+      <div id="journal-stats">loading…</div>
+    </div>
+  </div>
+  <div class="log-trade">
+    <button id="log-trade-btn" class="primary">+ Log Closed Trade</button>
+    <div id="log-trade-form" class="hidden">
+      <form id="trade-form">
+        <div class="grid">
+          <label>Ticker <input id="f-ticker" required list="ticker-list" placeholder="TSLA">
+            <datalist id="ticker-list">
+              <option value="TSLA"><option value="MSTR"><option value="AGQ">
+            </datalist>
+          </label>
+          <label>Action <select id="f-action"><option value="sell_cc">sell_cc</option></select></label>
+          <label>Strike <input id="f-strike" type="number" step="0.5" required></label>
+          <label>Expiration <input id="f-expiration" type="date" required></label>
+          <label>Contracts <input id="f-contracts" type="number" min="1" value="1" required></label>
+          <label>Premium $/sh <input id="f-premium" type="number" step="0.01" required></label>
+          <label>Intent <select id="f-intent">
+            <option value="cc_50pct_decay">cc_50pct_decay</option>
+            <option value="cc_earnings">cc_earnings</option>
+            <option value="cc_manual">cc_manual</option>
+          </select></label>
+          <label>Notes <input id="f-notes" type="text"></label>
+        </div>
+        <button type="submit">Save</button>
+        <button type="button" onclick="document.getElementById('log-trade-form').classList.add('hidden')">Cancel</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Daily digest section -->
+<section class="digest">
+  <h2>📄 Latest Daily Digest</h2>
+  <p class="subtitle" id="digest-meta">—</p>
+  <pre id="digest-content" class="digest-content">loading…</pre>
+</section>
+
+<footer>
+  <p>
+    Trade journal standalone server: <a href="http://127.0.0.1:9118/api/trade-vision/health" target="_blank">port 9118</a> ·
+    Pipeline cron: 30 16 * * 1-5 (4:30pm ET, weekdays) ·
+    Trade Vision skill: <code>C:/Data/Hermes/skills/trade-vision/SKILL.md</code>
+  </p>
+</footer>
+
+<script src="panel.js"></script>
+</body>
+</html>

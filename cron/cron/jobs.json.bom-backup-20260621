@@ -1,0 +1,527 @@
+﻿{
+    "jobs":  [
+                 {
+                     "id":  "1a810ce29751",
+                     "name":  "Daily News Review",
+                     "prompt":  "0. **COMEX silver preflight** (run first, every time — this runs before the news check so a hard alert can lead the digest):\n   - Execute exactly: `python C:/Data/Hermes/skills/commodity-inventory-monitor/scripts/fetch_comex_inventory.py --metal silver --threshold 0.25 --state-file C:/Data/Hermes/cache/comex_inventory_history.jsonl`\n   - Parse the JSON line on stdout. Capture these fields for later: `registered_oz`, `eligible_oz`, `total_oz`, `registered_ratio`, `site_reported_ratio`, `alert`, `fetch_ok`.\n   - If `fetch_ok` is false (data source unreachable / parse error), treat silver as \"data unavailable\" and continue — the news digest MUST still ship. Never block the digest on the silver check.\n   - If `alert` is true, the registered-vs-total ratio has dropped below Bill\u0027s 0.25 (25%) trigger. The squeeze precursor is active.\n\n1. **Find today\u0027s news video**: Find the most recent video from the **Shared Sapience** YouTube channel. Use the query: `Shared Sapience TCR`. Select the latest video uploaded in the last 24-48 hours whose title contains \"TCR\" or a date reference. Note the video ID.\n\n2. **Validate the video**: Before analyzing, verify:\n   - The video is NOT a music video, reaction video, or entertainment content\n   - The video was uploaded within the last 48 hours\n   - The video with the same ID has not been analyzed yet.\n\n3. If no new or valid news video is found, emit \"Repeat:\" + previous video analysis, which includes the video title, for the latest video, and end the job. (Still include the Market Pulse — see step 5.)\n\n4. If the video is new, follow the loaded `daily-news-digest` skill. It orchestrates the full pipeline and delegates the analysis step and format spec to `youtube-news-digest`. The format skill is the source of truth for the digest structure — do not re-derive it here.\n\n5. **Compose the final message**:\n   - Run the daily-news-digest skill to produce the news digest body.\n   - **ALERT prefix (conditional)**: If `alert` is true, prepend the following block ABOVE the news digest:\n     ```\n     🚨 COMEX SILVER ALERT — registered ratio at {registered_ratio*100:.1f}% (below your 0.25 trigger).\n     Registered: {registered_oz/1e6:.0f}M oz | Eligible: {eligible_oz/1e6:.0f}M oz | Total: {total_oz/1e6:.0f}M oz\n     Registered stock thin enough to signal squeeze dynamics. See today\u0027s digest for context.\n     ```\n   - **Market Pulse (always, when fetch_ok)**: Append the following block to the END of the message (before the source link/URL the format skill adds):\n     ```\n     ---\n     📊 Market Pulse — COMEX Silver\n     Registered: {registered_oz/1e6:.0f}M oz ({registered_ratio*100:.1f}% of total)\n     Eligible:   {eligible_oz/1e6:.0f}M oz\n     Total:      {total_oz/1e6:.0f}M oz\n     Source: silverdata.io\n     Status: {ALERT — below 0.25 threshold | normal}\n     ```\n   - If `fetch_ok` is false, omit the Market Pulse block entirely (don\u0027t ship partial data).\n   - Write the assembled message body to /tmp/digest.txt.\n\n6. **Deliver the digest** to the configured target. This job\u0027s `deliver` field is set (currently `telegram`), so:\n   - Run `hermes send --list` to confirm the platform is configured.\n   - If configured, run `hermes send --to \u003ctarget\u003e --file /tmp/digest.txt` to route the digest.\n   - If the platform is not configured, surface that honestly and still emit the digest in the chat response so nothing is lost.\n   - The format skill (`youtube-news-digest`) handles the actual `hermes send` invocation and the platform check when a `deliver_to` parameter is passed in.\n\nIf any step fails, emit: \"Daily News job failed at step [N]: [error]. Manual review needed.\"\n",
+                     "skills":  [
+                                    "daily-news-digest"
+                                ],
+                     "model":  null,
+                     "provider":  null,
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 5 * * *",
+                                      "display":  "0 5 * * *"
+                                  },
+                     "schedule_display":  "0 5 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  9
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-13T18:51:54.206696-07:00",
+                     "next_run_at":  "2026-06-22T05:00:00-07:00",
+                     "last_run_at":  "2026-06-21T05:14:47.026882-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "telegram",
+                     "origin":  null,
+                     "enabled_toolsets":  null,
+                     "workdir":  null,
+                     "skill":  "daily-news-digest"
+                 },
+                 {
+                     "id":  "aada03350a2c",
+                     "name":  "Daily Graphify Refresh",
+                     "prompt":  "Run `python C:/Data/Hermes/scripts/refresh_graphify.py` to refresh the graphify merged graph. If GEMINI_API_KEY is missing, the script will noop and exit 0. Otherwise it writes a marker file at C:/Data/Hermes/cache/graphify_refresh.marker and appends a status line to C:/Data/Hermes/cache/graphify_refresh.log. Report the exit code and the last log line. If the script exits non-zero, alert the user with the error.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  null,
+                     "provider":  null,
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 4 * * *",
+                                      "display":  "0 4 * * *"
+                                  },
+                     "schedule_display":  "0 4 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  6
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-15T21:59:17.480581-07:00",
+                     "next_run_at":  "2026-06-22T04:00:00-07:00",
+                     "last_run_at":  "2026-06-21T04:01:18.878203-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "local",
+                     "origin":  null,
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "44ce1bfc5939",
+                     "name":  "Nightly Agent Research (tick)",
+                     "prompt":  "You are one ~3-minute tick of the nightly agentic-research pipeline. The job fires every 30 minutes from 1:00am to 3:30am Pacific (6 ticks/night). Your goal: do ONE focused slice of research, append findings to the running state file, and exit cleanly.\n\n## TIME BUDGET\n3-minute hard cap. If you overrun you will be killed mid-search. Stop researching and write findings by the 2:30 mark. If you\u0027re in a long extract, abort it.\n\n## STATE FILE\n`C:\\Data\\Hermes\\cron\\output\\nightly-agent-research\\YYYY-MM-DD.md`\n\n- Use `date +%Y-%m-%d` to get today\u0027s date (Pacific).\n- At the start of the tick, `ls` the directory to see if the file exists. If not, create it with the header block shown below.\n- Read the current contents (it has prior ticks\u0027 findings).\n- Append your new tick\u0027s section at the bottom. Do not overwrite prior ticks.\n\n## WHAT TO RESEARCH\n\"Agentic skills, projects, architectures, cutting-edge improvements\" — pick ONE lane per tick:\n\n- **arXiv papers** (cs.AI, cs.MA, cs.CL, cs.LG) from the last 24h — use the `arxiv` skill\n- **GitHub Trending** for: agent frameworks, MCP servers, skill libraries, ACP/A2A protocol implementations\n- **AI lab announcements** (Anthropic, OpenAI, DeepMind, Meta AI, Mistral, Nous Research, xAI, DeepSeek, MiniMax, Kimi, Qwen)\n- **Hacker News** top stories tagged AI/agent/MCP/LLM\n- **Reddit** r/LocalLLaMA, r/MachineLearning top\n- **Specific topics**: agent loops, tool use, memory architectures, context engineering, multi-agent coordination, evaluation/guardrails, prompt caching, MCP/ACP/A2A protocols, model routing, context compression, subagent orchestration, agent memory tiers\n\n## METHOD\n1. Read the state file\u0027s \"Sources covered\" and \"Findings\" sections. Pick a lane that hasn\u0027t been covered or deepen a thread that needs more detail.\n2. Do 2-4 targeted searches. Use `web_search` + `web_extract` (faster than browser). For arxiv, use the `arxiv` skill\u0027s helper script. Read abstracts, NOT full PDFs, unless the paper is on-topic and recent AND you have time.\n3. Find 1-3 NEW findings per tick. For each, capture:\n   - Title + source URL\n   - 1-2 sentence description\n   - 1-2 sentence \"why this matters for Hermes\" (tie to actual Hermes architecture: skills, MCP servers, memory tiers, agent loop, tools, gateway, etc.)\n   - Status: New | Repeat (covered in prior tick) | Already-available (we have it)\n   - Action: install | configure | monitor-only | no-action\n4. If you find nothing genuinely new this tick, increment the \"Idle ticks\" counter. After 2 idle ticks, add `## RESEARCH COMPLETE` to the bottom of the state file — this signals the morning job to stop waiting.\n5. End your tick with a one-line summary printed to stdout: \"Tick N done: X new findings, Y repeats, idle=N\"\n\n## STATE FILE FORMAT\n\nFirst tick creates the header:\n```markdown\n# Nightly Agentic Research — YYYY-MM-DD\n\n## Sources covered so far\n- (none yet)\n\n## Findings so far\n- (none yet)\n\n## Idle ticks: 0\n\n---\n\n## Tick 1 — YYYY-MM-DD HH:MM\nLane: \u003clane name\u003e\nSearches: \u003ccomma-separated query list\u003e\n\n### Findings\n1. [Title](URL) — description — *Why for Hermes: ...*\n   Status: New\n   Action: install\n2. ...\n\n### Sources covered this tick\n- url1\n- url2\n```\n\nSubsequent ticks append new `## Tick N` blocks AND update the \"Sources covered so far\" and \"Findings so far\" sections at the top.\n\n## RULES\n- DO NOT install anything. DO NOT write to other files. Research only.\n- DO NOT call `hermes skills install` — the morning report proposes installs for the user to approve.\n- If `blogwatcher-cli` is not installed (verify with `which blogwatcher-cli`), note it as a finding (Status: not-installed, Action: install) but don\u0027t install it yourself.\n- Don\u0027t fabricate URLs or claims. If you can\u0027t verify, say so explicitly.\n- Self-limit: max 10-15 papers, max 20 web pages per tick. Don\u0027t go down rabbit holes.\n- Don\u0027t read the same source twice across ticks — check the \"Sources covered\" list first.\n\n## DELIVERY\n`local` — no Telegram, no other channels. Just write the state file and exit.",
+                     "skills":  [
+                                    "arxiv"
+                                ],
+                     "skill":  "arxiv",
+                     "model":  "anthropic/claude-sonnet-4",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "*/30 1-3 * * *",
+                                      "display":  "*/30 1-3 * * *"
+                                  },
+                     "schedule_display":  "*/30 1-3 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  32
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-15T22:59:10.186735-07:00",
+                     "next_run_at":  "2026-06-22T01:00:00-07:00",
+                     "last_run_at":  "2026-06-21T03:32:01.621659-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "local",
+                     "origin":  null,
+                     "enabled_toolsets":  [
+                                              "web",
+                                              "search",
+                                              "terminal",
+                                              "file",
+                                              "session_search",
+                                              "skills"
+                                          ],
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "05a3a78d62cb",
+                     "name":  "Morning Growth Report",
+                     "prompt":  "You are the morning growth-report agent. Read last night\u0027s research state and deliver a synthesis report to Bill via Telegram.\n\n## INPUT\nState file: `C:\\Data\\Hermes\\cron\\output\\nightly-agent-research\\YYYY-MM-DD.md`\n\nSteps:\n1. `date +%Y-%m-%d` to get today\u0027s date (Pacific)\n2. `ls /c/Data/Hermes/cron/output/nightly-agent-research/` to see what nights have files\n3. Read the file matching today\u0027s date\n\n## MISSING/EMPTY INPUT HANDLING\n- File missing → send `hermes send --to telegram \"🌙 No research ran for YYYY-MM-DD. Check \\`hermes cron list\\` for the research-tick job\u0027s last status (job_id 44ce1bfc5939).\"` and exit.\n- File exists but has no findings (or is just the header) → send a brief \"no signal\" message: \"🌙 Research ran for YYYY-MM-DD but found nothing actionable. \u003cone sentence on what lanes were searched\u003e.\" and exit.\n- File contains `## RESEARCH COMPLETE` with findings → synthesize below.\n- File has findings but no `## RESEARCH COMPLETE` → still synthesize (research ticked but didn\u0027t terminate cleanly).\n\n## OUTPUT FORMAT (Bill\u0027s preferred synthesis style)\nBill likes reports structured as: TL;DR with decisions → verified facts → tier/architecture breakdown → install commands + YAML → phased kill-switchable plan → risk register → open questions → close with \"Want me to proceed with Step X, or do you want to review the plan first?\"\n\nThe Telegram format requires translation:\n- 3-5 bullet TL;DR with DECISIONS (not options). Lead with concrete facts.\n- Findings table converted to bullet groups by tier (skills / MCP / memory / agent loop / tools / etc.)\n- Install commands: copy-pasteable code blocks. Each one tied to a source URL and risk note.\n- Phased plan: numbered Step 1, Step 2, ... each independently cancellable.\n- Risk register: bullets with `Risk: ... | Mitigation: ...`\n- Open questions: bullet list, things you couldn\u0027t verify or that need a human decision\n- End: \"Want me to proceed with Step X, or do you want to review the plan first?\"\n\n## TELEGRAM CONSTRAINTS (CRITICAL)\n- **4096-char hard limit per message.** If your report exceeds that, split into multiple `hermes send` calls (e.g. \"Part 1/3\", \"Part 2/3\", ...).\n- **Use `*bold*` and `_italic_`.** NO `###` headers — Telegram ignores them. NO `|` tables — use bullets. NO `---` horizontal rules.\n- **Don\u0027t `hermes send --file`.** The Telegram message IS the digest.\n- The Telegram gateway has a known duplicate-send bug for messages \u003e4096 chars (stream_consumer.py L510+L585). Splitting into \u003c4096 chunks avoids the bug. Each chunk under 4000 chars to be safe.\n\n## DELIVERY MECHANISM\nThe `send_message` tool is NOT registered in this session. Use the Hermes CLI:\n```bash\nhermes send --to telegram \"...\"\nhermes send --list   # confirm Telegram is configured; if it says \"No messaging platforms configured\", report the gap and surface the digest content in stdout instead\n```\n\nIf `hermes send` fails, surface the error in stdout — don\u0027t fabricate success.\n\n## VERIFICATION BEFORE SENDING\nBefore each `hermes send` call:\n- Did you read the FULL state file (all ticks)?\n- Are all Status/Action fields populated? Drop findings that don\u0027t have them.\n- Does every install command have a source URL? Drop ones that don\u0027t.\n- Is each chunk under 4000 chars (well below 4096)?\n- Did you include the closing \"Want me to proceed...\" line?\n\n## RULES\n- DON\u0027T fabricate. If a finding\u0027s claim has no source URL, drop it.\n- DON\u0027T propose installs you can\u0027t copy-paste from the source URL. Vague \"install X\" without a command is useless.\n- DON\u0027T propose changes to skills or config that Bill hasn\u0027t asked about. Stay in research/install scope.\n- If the research file\u0027s \"Open Questions\" section has items, surface the most important 1-3 in the report.\n- Always deliver. Even \"no signal\" gets a Telegram message — Bill expects it at 6 AM.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  null,
+                     "provider":  null,
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  [
+                                          "44ce1bfc5939"
+                                      ],
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 6 * * *",
+                                      "display":  "0 6 * * *"
+                                  },
+                     "schedule_display":  "0 6 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  6
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-15T22:59:34.774845-07:00",
+                     "next_run_at":  "2026-06-22T06:00:00-07:00",
+                     "last_run_at":  "2026-06-21T06:08:51.099515-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "telegram",
+                     "origin":  null,
+                     "enabled_toolsets":  [
+                                              "terminal",
+                                              "file"
+                                          ],
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "c92f252edb85",
+                     "name":  "spec-monitor-weekly",
+                     "prompt":  "You are the weekly spec monitor for hermes-agent on this Windows host. Check the state of these agent-ecosystem specs and report any movement since last week. Read C:\\Data\\Hermes\\cron\\output\\spec-monitor\\state.yaml first (if present) to diff against last week\u0027s report.\n\nPRIMARY TARGETS (in priority order):\n\n1. **agnt8x EAM** — portable agent manifest spec at https://agnt8x.ai/\n   - Was at v0.1; watch for v0.2 release and schema breaks.\n   - Signal: any new version tag, breaking field additions, adoption announcements by major players (Anthropic/OpenAI/HF).\n\n2. **ACP** (Agent Communication Protocol) — Linux Foundation proposal at arXiv:2602.15055 (https://arxiv.org/html/2602.15055v1).\n   - Watch draft → ratified milestones, federated-discovery SLA details, A2A conformance tests.\n\n3. **Claude Agent SDK** — Anthropic\u0027s agent runtime SDK.\n   - Watch API freeze/stable, pricing changes, divergence from MCP, separate-billing semantics.\n\n4. **MS AI Agent OS** — Microsoft Windows + AI agent integration (MS Build 2026).\n   - Watch VS Code Autopilot default-on changes, Win 11 cumulative updates affecting agent runtimes, Copilot Studio GA changes.\n\nINCIDENTAL MONITORING:\n- MCP spec changes at modelcontextprotocol.io\n- OpenRouter pricing on minimax/minimax-m3 and claude-haiku-4.5\n- SkillCamo lineage papers (follow-up to arXiv:2606.18198) — any new multimodal-attack or skill-injection papers\n\nHERMES CONTEXT (for relevance scoring):\n- Active model: minimax/minimax-m3 via openrouter\n- Host: Windows 11 Pro, ROG Flow Z13\n- Profile structure: default + default-test-mcp\n- Recent additions: SkillCamo patch (commit c770b1a3a), agentic-tools-mcp + agentmemory-standalone wired in default-test-mcp\n\nOUTPUT FORMAT (Bill\u0027s preferred synthesis):\n- TL;DR with DECISIONS (3-5 bullets max, lead with concrete facts)\n- Per-target status: current version/state (with date checked), changes since last report (or \"no movement\"), relevance to hermes, action item (if any)\n- End with \"Action items for hermes:\" or \"No action items this week.\"\n\nSTATE PERSISTENCE:\nBefore sending, write the new state to C:\\Data\\Hermes\\cron\\output\\spec-monitor\\state.yaml with the format:\n```\nlast_checked: YYYY-MM-DD\nagnt8x_eam:\n  version: ...\n  changed: yes/no\n  notes: ...\nacp: ...\nclaude_agent_sdk: ...\nms_ai_agent_os: ...\nmcp_spec: ...\nopenrouter: ...\nskillcamo_lineage: ...\n```\n\nTELEGRAM CONSTRAINTS (CRITICAL):\n- 4096-char hard limit per message. Split with \"Part N/M\" prefixes if needed.\n- Use *bold* and _italic_, NO ### headers, NO | tables (Telegram ignores them).\n- Don\u0027t `hermes send --file` — the message IS the digest.\n- Send via: hermes send --to telegram \"...\"\n\nSILENT FALLBACK:\nIf literally nothing changed across all targets, send exactly \"[SILENT]\" so the gateway suppresses delivery (Bill expects either signal or [SILENT], never silence).\n\nDELIVERY:\nYour final response will be auto-delivered to the user — do NOT use send_message. Just produce the report as your final response. If the response is too long, split with explicit \"Part 1/N\", \"Part 2/N\", etc.",
+                     "skills":  [
+                                    "web_search",
+                                    "blogwatcher",
+                                    "arxiv"
+                                ],
+                     "skill":  "web_search",
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 9 * * 1",
+                                      "display":  "0 9 * * 1"
+                                  },
+                     "schedule_display":  "0 9 * * 1",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  0
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T10:12:08.498966-07:00",
+                     "next_run_at":  "2026-06-22T09:00:00-07:00",
+                     "last_run_at":  null,
+                     "last_status":  null,
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "3b7f197706e9",
+                     "name":  "watchdog-health-probe",
+                     "prompt":  "You are the Hermes self-healing watchdog (v2). Run the probe + recovery cycle every minute.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\hermes_watchdog.py\" --once\n```\n\nThe new watchdog reads C:\\Data\\Hermes\\config.yaml dynamically to discover MCP servers and Docker containers. It probes silently, attempts recovery (restart MCP, restart docker container) when 2+ consecutive failures occur, and only alerts via Telegram when:\n  - state fingerprint changes (new failure / recovery / composition change)\n  - recovery is exhausted (3 failed attempts)\n\nThe watchdog handles all alerting and dedup itself. Your job is to invoke it on schedule.\n\nIf the script itself errors (Python crash, missing file), surface via `hermes send --to telegram \"🐕 Watchdog crashed: \u003cerror message\u003e\"`.\n\nIf the script exits cleanly, do nothing.\n\nState files (read for inspection):\n  - C:\\Data\\Hermes\\health\\watchdog_state.json — rich state with recovery_history (last 100 events)\n  - C:\\Data\\Hermes\\cron\\output\\watchdog\\state.json — legacy format used by /api/health/deep\n\nDO NOT modify the watchdog script. DO NOT add new probes. Just run it.\n\nAfter the command finishes, your final response is auto-delivered — keep it terse (or empty if the script ran clean).",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  "hermes_watchdog.py",
+                     "no_agent":  true,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "*/1 * * * *",
+                                      "display":  "*/1 * * * *"
+                                  },
+                     "schedule_display":  "*/1 * * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  1138
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T10:26:42.116316-07:00",
+                     "next_run_at":  "2026-06-21T07:24:00-07:00",
+                     "last_run_at":  "2026-06-21T07:23:06.856457-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "telegram",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "ec69fccaa5f6",
+                     "name":  "stall-detector",
+                     "prompt":  "You are the Hermes stall detector (Option C). Run the detector script every minute.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\stall-detector.py\"\n```\n\nThe script detects stuck agents (loops, hung LLM calls) by inspecting state.db. It also flags zombie sessions (running but no message in \u003e2h) — those bloat state.db.\n\nThe script handles its own alerting via Telegram (fingerprint-dedup, won\u0027t spam). If the script exits cleanly, do nothing further.\n\nIf the script itself errors (Python crash, DB locked, etc.), surface to user via:\n```\nhermes send --to telegram \"🧊 Stall detector crashed: \u003cerror\u003e\"\n```\n\nState at: `C:\\Data\\Hermes\\cron\\output\\stall-detector\\state.json` — read it for last_alert context if needed.\n\nDO NOT modify the script. DO NOT add new probes. Just run it.\n\nFinal response is auto-delivered — keep it terse or empty.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  "stall-detector.py",
+                     "no_agent":  true,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "* * * * *",
+                                      "display":  "* * * * *"
+                                  },
+                     "schedule_display":  "* * * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  4329
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T10:28:58.223051-07:00",
+                     "next_run_at":  "2026-06-21T07:23:00-07:00",
+                     "last_run_at":  "2026-06-21T07:22:38.062375-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "telegram",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "027f1b2db2a3",
+                     "name":  "backup-state-daily",
+                     "prompt":  "You are the daily state backup job. Run the backup script once per day.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\backup-state.py\"\n```\n\nThe script handles its own Telegram alerting on failure or first-run summary. State at `C:\\Data\\Hermes\\cron\\output\\backup\\state.json`.\n\nIf the script itself errors (Python crash, etc.), surface to user:\n```\nhermes send --to telegram \"🗄️ Backup script crashed: \u003cerror\u003e\"\n```\n\nDO NOT modify the script. Just run it. Final response auto-delivered; keep terse or empty.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 3 * * *",
+                                      "display":  "0 3 * * *"
+                                  },
+                     "schedule_display":  "0 3 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  4
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T11:26:58.638298-07:00",
+                     "next_run_at":  "2026-06-22T03:00:00-07:00",
+                     "last_run_at":  "2026-06-21T03:01:55.515512-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "6f63444bb185",
+                     "name":  "cleanup-zombie-sessions-weekly",
+                     "prompt":  "You are the weekly zombie-session cleanup job. Run the cleanup script once per week.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\cleanup-zombie-sessions.py\"\n```\n\nMarks sessions with `ended_at IS NULL` AND last message \u003e24h ago as ended with reason \u0027auto-cleanup-zombie\u0027. Telegram-alerts on each run with the list. State at `C:\\Data\\Hermes\\cron\\output\\zombie-cleanup\\state.json`.\n\nIf the script itself errors, surface to user:\n```\nhermes send --to telegram \"🧹 Zombie cleanup crashed: \u003cerror\u003e\"\n```\n\nDO NOT modify the script. Final response auto-delivered; keep terse or empty.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 4 * * 0",
+                                      "display":  "0 4 * * 0"
+                                  },
+                     "schedule_display":  "0 4 * * 0",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  1
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T11:26:59.655378-07:00",
+                     "next_run_at":  "2026-06-28T04:00:00-07:00",
+                     "last_run_at":  "2026-06-21T04:01:22.661842-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "b697d65d15b3",
+                     "name":  "verify-fallback-provider-daily",
+                     "prompt":  "You are the daily fallback-provider smoke test. Run the verifier once per day.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\verify-fallback-provider.py\"\n```\n\nHits Ollama at localhost:11434 with the model configured in `fallback_providers[0]` in config.yaml. Confirms it returns a coherent response. Self-alerts on failure via Telegram.\n\nIf the script itself errors, surface:\n```\nhermes send --to telegram \"⚠️ Fallback verifier crashed: \u003cerror\u003e\"\n```\n\nState at `C:\\Data\\Hermes\\cron\\output\\fallback-verify\\state.json`. DO NOT modify the script.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 5 * * *",
+                                      "display":  "0 5 * * *"
+                                  },
+                     "schedule_display":  "0 5 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  4
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T11:31:18.356113-07:00",
+                     "next_run_at":  "2026-06-22T05:00:00-07:00",
+                     "last_run_at":  "2026-06-21T05:05:46.055486-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "2647e931676c",
+                     "name":  "thermal-probe-daily",
+                     "prompt":  "You are the daily thermal throttle probe. Run the probe once per day.\n\nCommand:\n```\n\"C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe\" \"C:\\Data\\Hermes\\scripts\\thermal-probe.py\"\n```\n\nReads Windows event log for thermal-throttling events (System log, event IDs 37 and 41) from the last 24h. Self-alerts on detection via Telegram.\n\nIf the script itself errors:\n```\nhermes send --to telegram \"🌡️ Thermal probe crashed: \u003cerror\u003e\"\n```\n\nState at `C:\\Data\\Hermes\\cron\\output\\thermal-probe\\state.json`. DO NOT modify the script.",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  "minimax/minimax-m3",
+                     "provider":  "openrouter",
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 6 * * *",
+                                      "display":  "0 6 * * *"
+                                  },
+                     "schedule_display":  "0 6 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  4
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T11:31:19.380345-07:00",
+                     "next_run_at":  "2026-06-22T06:00:00-07:00",
+                     "last_run_at":  "2026-06-21T06:01:17.421295-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 },
+                 {
+                     "id":  "e1f8bb23305d",
+                     "name":  "backup-honcho-daily",
+                     "prompt":  "Run the Honcho database backup script. Execute:\n\n```\ncmd.exe //c \u0027wsl -d hermes-tools -- sudo /bin/bash /mnt/c/Data/Hermes/scripts/backup-honcho.sh\u0027\n```\n\nReport back:\n- Exit code\n- Final line(s) of output (look for [OK]/[FAIL])\n- Current backup directory listing under C:\\Data\\Hermes\\cron\\output\\backup\\honcho\\daily\\\n\nIf exit code != 0, surface the error to the user via Telegram. Otherwise emit [SILENT] (no user-facing alert — successful backups should be invisible).",
+                     "skills":  [
+
+                                ],
+                     "skill":  null,
+                     "model":  null,
+                     "provider":  null,
+                     "base_url":  null,
+                     "script":  null,
+                     "no_agent":  false,
+                     "context_from":  null,
+                     "schedule":  {
+                                      "kind":  "cron",
+                                      "expr":  "0 2 * * *",
+                                      "display":  "0 2 * * *"
+                                  },
+                     "schedule_display":  "0 2 * * *",
+                     "repeat":  {
+                                    "times":  null,
+                                    "completed":  4
+                                },
+                     "enabled":  true,
+                     "state":  "scheduled",
+                     "paused_at":  null,
+                     "paused_reason":  null,
+                     "created_at":  "2026-06-17T12:17:16.065638-07:00",
+                     "next_run_at":  "2026-06-22T02:00:00-07:00",
+                     "last_run_at":  "2026-06-21T02:01:01.558318-07:00",
+                     "last_status":  "ok",
+                     "last_error":  null,
+                     "last_delivery_error":  null,
+                     "deliver":  "origin",
+                     "origin":  {
+                                    "platform":  "telegram",
+                                    "chat_id":  "8568067385",
+                                    "chat_name":  "William Agner",
+                                    "thread_id":  null
+                                },
+                     "enabled_toolsets":  null,
+                     "workdir":  null
+                 }
+             ],
+    "updated_at":  "2026-06-21T07:23:06.856457-07:00"
+}

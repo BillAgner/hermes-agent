@@ -1,0 +1,1177 @@
+- id: CAND-1781589818-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Replacement would
+    put memory at 4,569/4,000 chars. Shorten the new content, or ''remove'' other
+    stale or less important entries to make room (see current_entries below), the…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''remove''); `old_text`
+    (was ''Memory migration A-H complete 2026-06-1…, now ''qdrant-client 1.18 (2026-06-16):
+    .searc…)'
+  rationale: 'observed in session 20260615_225: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing `action`
+    (was ''replace'', now ''remove''); `old_text` (was ''Memory migration A-H complete
+    2026-06-1…, now ''qdrant-client 1.18 (2026-06-16): .searc…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-16T06:03:38.255122+00:00'
+  source_episodes:
+  - 20260615_225305_cd77ca
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781589818.2551227
+- id: CAND-1781589820-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''video_analysis
+    promoted to local 2026-06-15; full technique in `media/fallback-llm-video-analysis`
+    (post-analysis web-verification of ⚠️ claims using `we…'
+  action: 'retry `memory` with: `action` (was ''remove'', now ''replace''); `old_text`
+    (was "video_analysis promoted to local 2026-0…, now ''Memory migration A-H complete
+    2026-06-1…)'
+  rationale: 'observed in session 20260615_225: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing `action`
+    (was ''remove'', now ''replace''); `old_text` (was "video_analysis promoted to
+    local 2026-0…, now ''Memory migration A-H complete 2026-06-1…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-16T06:03:40.298472+00:00'
+  source_episodes:
+  - 20260615_225305_cd77ca
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781589820.298473
+- id: CAND-1781634966-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,734/4,000
+    chars. Adding this entry (737 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''Hermes dashboard at http://127.0.0.1:91…, now ''Hermes dashboard at http://127.0.0.1:91…)'
+  rationale: 'observed in session 20260616_113: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''Hermes dashboard at http://127.0.0.1:91…,
+    now ''Hermes dashboard at http://127.0.0.1:91…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-16T18:36:06.915680+00:00'
+  source_episodes:
+  - 20260616_113019_2b7ede
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781634966.9156804
+- id: CAND-1781655535-memory
+  trigger: 'tool `memory` errored: {"error": "Unknown action ''list''. Use: add, replace,
+    remove", "success": false}'
+  action: 'retry `memory` with: `action` (was ''list'', now ''remove'')'
+  rationale: 'observed in session 20260613_214: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''list'',
+    now ''remove'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T00:18:55.359642+00:00'
+  source_episodes:
+  - 20260613_214414_c5416b5f
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781655535.3596425
+- id: CAND-1781655573-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,158/4,000
+    chars. Adding this entry (1049 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `content` (was ''[observation] Telegram dupe-send
+    fix (c…, now ''[observation] Telegram dupe-send fix (c…)'
+  rationale: 'observed in session 20260613_214: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''[observation] Telegram dupe-send fix (c…, now ''[observation] Telegram
+    dupe-send fix (c…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T00:19:33.871901+00:00'
+  source_episodes:
+  - 20260613_214414_c5416b5f
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781655573.8719015
+- id: CAND-1781663448-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''§\n[observation]
+    Telegram dupe-send fix (commit 04f9d747e)\nLong (>4096ch) Telegram streamed replies
+    were sent twice — original chunks + a fresh-final du…'
+  action: 'retry `memory` with: `old_text` (was ''§\n[observation] Telegram dupe-send
+    fix…, now ''Telegram dupe-send fix (commit 04f9d747…)'
+  rationale: 'observed in session 20260616_173: the same `memory` call with overlapping
+    args (action, content, old_text, target) succeeded after the failure by changing
+    `old_text` (was ''§\n[observation] Telegram dupe-send fix…, now ''Telegram dupe-send
+    fix (commit 04f9d747…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T02:30:48.161925+00:00'
+  source_episodes:
+  - 20260616_173903_fe1b5f12
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781663448.1619253
+- id: CAND-1781707956-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Replacement would
+    put memory at 1,453/1,375 chars. Shorten the new content, or ''remove'' other
+    stale or less important entries to make room (see current_entries below), the…'
+  action: 'retry `memory` with: `content` (was ''Workflow signals: "make determinations"…,
+    now ''Workflow signals: "make determinations"…)'
+  rationale: 'observed in session 20260617_071: the same `memory` call with overlapping
+    args (action, content, old_text, target) succeeded after the failure by changing
+    `content` (was ''Workflow signals: "make determinations"…, now ''Workflow signals:
+    "make determinations"…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T14:52:36.453026+00:00'
+  source_episodes:
+  - 20260617_071607_5d4b5cf1
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781707956.4530263
+- id: CAND-1781718184-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Replacement would
+    put memory at 1,444/1,375 chars. Shorten the new content, or ''remove'' other
+    stale or less important entries to make room (see current_entries below), the…'
+  action: 'retry `memory` with: `content` (was ''User is William Agner ("Bill"). Hermes…,
+    now ''User is William Agner ("Bill"). Hermes…)'
+  rationale: 'observed in session 20260617_071: the same `memory` call with overlapping
+    args (action, content, old_text, target) succeeded after the failure by changing
+    `content` (was ''User is William Agner ("Bill"). Hermes…, now ''User is William
+    Agner ("Bill"). Hermes…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T17:43:04.216654+00:00'
+  source_episodes:
+  - 20260617_071607_5d4b5cf1
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781718184.216654
+- id: CAND-1781721484-memory
+  trigger: 'tool `memory` errored: {"error": "old_text is required for ''replace''
+    action.", "success": false}'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260617_071: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing nothing obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-17T18:38:04.169302+00:00'
+  source_episodes:
+  - 20260617_071607_5d4b5cf1
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781721484.1693027
+- id: CAND-1781808519-memory
+  trigger: 'tool `memory` errored: {"error": "old_text is required for ''replace''
+    action.", "success": false}'
+  action: 'retry `memory` with: `content` (was "TradingView Desktop: MS Store UWP
+    insta…, now ''Hermes dashboard at http://127.0.0.1:91…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was "TradingView Desktop: MS Store UWP insta…, now ''Hermes dashboard at http://127.0.0.1:91…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T18:48:39.124456+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781808519.1244564
+- id: CAND-1781808544-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''TradingView
+    Desktop: Microsoft Store (UWP) install on this host, not in the standard %LocalAppData%
+    or Program Files locations. Path pattern: `C:\\Progra…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''add''); `content`
+    (was "TradingView Desktop: MS Store UWP insta…, now ''C:\\Data\\Hermes\\scripts\\startup_herm…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''replace'', now ''add''); `content` (was "TradingView Desktop: MS Store
+    UWP insta…, now ''C:\\Data\\Hermes\\scripts\\startup_herm…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T18:49:04.572588+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781808544.5725884
+- id: CAND-1781809294-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,858/4,000
+    chars. Adding this entry (1197 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was "markitdown integration (2026-06-18): Mi…, now ''C:\\Data\\Hermes\\scripts\\startup_herm…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was "markitdown integration (2026-06-18):
+    Mi…, now ''C:\\Data\\Hermes\\scripts\\startup_herm…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:01:34.402294+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781809294.4022949
+- id: CAND-1781809435-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''Hermes
+    runtime venv vs system Python: `which python3` on Windows resolves to `C:\\Data\\Hermes\\hermes-agent\\venv\\Scripts\\python.exe`
+    (cp311, first on…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''add''); `content`
+    (was ''Hermes runtime venv vs system Python: `…, now ''markitdown integration
+    (2026-06-18): ma…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''replace'', now ''add''); `content` (was ''Hermes runtime venv vs system
+    Python: `…, now ''markitdown integration (2026-06-18): ma…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:03:55.636787+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781809435.6367877
+- id: CAND-1781810106-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,906/4,000
+    chars. Adding this entry (593 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''memory-curator skill at C:\\Data\\Herme…, now ''Webwright: Firefox only
+    (Chromium HTTP/…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''memory-curator skill at C:\\Data\\Herme…,
+    now ''Webwright: Firefox only (Chromium HTTP/…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:15:06.228057+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781810106.2280579
+- id: CAND-1781810132-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,531/4,000
+    chars. Adding this entry (551 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was ''2026-06-18: memory cap bumped 4000→8000…,
+    now ''2026-06-18: cap 4000→8000 via `hermes c…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''2026-06-18: memory cap bumped 4000→8000…, now ''2026-06-18: cap 4000→8000
+    via `hermes c…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:15:32.564723+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781810132.5647235
+- id: CAND-1781810765-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Refusing to write
+    MEMORY.md: file on disk has content that wouldn''t round-trip through the memory
+    tool (likely added by the patch tool, a shell append, a manual edit, or a…'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing nothing
+    obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:26:05.151949+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781810765.1519492
+- id: CAND-1781810772-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Refusing to write
+    MEMORY.md: file on disk has content that wouldn''t round-trip through the memory
+    tool (likely added by the patch tool, a shell append, a manual edit, or a…'
+  action: 'retry `memory` with: `action` (was ''remove'', now ''replace''); `old_text`
+    (was "TradingView Desktop: MS Store UWP insta…, now ''COMEX inventory data: CME.com
+    IP-blocks…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing `action`
+    (was ''remove'', now ''replace''); `old_text` (was "TradingView Desktop: MS Store
+    UWP insta…, now ''COMEX inventory data: CME.com IP-blocks…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:26:12.554496+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781810772.5544968
+- id: CAND-1781810831-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Refusing to write
+    MEMORY.md: file on disk has content that wouldn''t round-trip through the memory
+    tool (likely added by the patch tool, a shell append, a manual edit, or a…'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing nothing
+    obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:27:11.561503+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781810831.5615032
+- id: CAND-1781811562-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,991/4,000
+    chars. Adding this entry (794 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''markitdown MCP OCR patch (2026-06-18):…, now ''markitdown + OCR (2026-06-18):
+    markitdo…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''markitdown MCP OCR patch (2026-06-18):…,
+    now ''markitdown + OCR (2026-06-18): markitdo…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:39:22.859854+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781811562.859854
+- id: CAND-1781811646-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,991/4,000
+    chars. Adding this entry (503 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''remove'')'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''add'',
+    now ''remove'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:40:46.640726+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781811646.6407268
+- id: CAND-1781811680-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 3,991/4,000
+    chars. Adding this entry (503 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was "markitdown-mcp fork patched 2026-06-18…,
+    now ''(memory tool note: replace/remove actio…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was "markitdown-mcp fork patched 2026-06-18…, now ''(memory tool note: replace/remove
+    actio…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:41:20.415973+00:00'
+  source_episodes:
+  - 20260618_114620_d36e62
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781811680.4159734
+- id: CAND-1781812322-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Refusing to write
+    MEMORY.md: file on disk has content that wouldn''t round-trip through the memory
+    tool (likely added by the patch tool, a shell append, a manual edit, or a…'
+  action: 'retry `memory` with: `old_text` (was "TradingView Desktop: MS Store UWP
+    insta…, now ''TradingView Desktop: MS Store UWP insta…)'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing `old_text`
+    (was "TradingView Desktop: MS Store UWP insta…, now ''TradingView Desktop: MS
+    Store UWP insta…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:52:02.585623+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781812322.5856233
+- id: CAND-1781812364-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Refusing to write
+    MEMORY.md: file on disk has content that wouldn''t round-trip through the memory
+    tool (likely added by the patch tool, a shell append, a manual edit, or a…'
+  action: 'retry `memory` with: `action` (was ''remove'', now ''add'')'
+  rationale: 'observed in session 20260618_114: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''remove'',
+    now ''add'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T19:52:44.651697+00:00'
+  source_episodes:
+  - 20260618_114330_23ea2a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781812364.6516974
+- id: CAND-1781817710-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,697/8,000
+    chars. Adding this entry (1565 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''Understand-Anything installed 2026-06-1…, now ''last30days skill (mvanhorn/last30days-s…)'
+  rationale: 'observed in session 20260618_141: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''Understand-Anything installed
+    2026-06-1…, now ''last30days skill (mvanhorn/last30days-s…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T21:21:50.912263+00:00'
+  source_episodes:
+  - 20260618_141225_14d022
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781817710.912263
+- id: CAND-1781817744-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 6,635/8,000
+    chars. Adding this entry (1594 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `content` (was "Understand-Anything (Egonex-AI/Understa…,
+    now "Understand-Anything (Egonex-AI, v2.8.0)…)'
+  rationale: 'observed in session 20260618_141: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was "Understand-Anything (Egonex-AI/Understa…, now "Understand-Anything (Egonex-AI,
+    v2.8.0)…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T21:22:24.623096+00:00'
+  source_episodes:
+  - 20260618_141225_14d022
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781817744.6230962
+- id: CAND-1781818371-memory
+  trigger: 'tool `memory` errored: {"error": "old_text is required for ''replace''
+    action.", "success": false}'
+  action: 'retry `memory` with: `content` (was "Understand-Anything (Egonex-AI) install…,
+    now "Understand-Anything (Egonex-AI) install…)'
+  rationale: 'observed in session 20260618_141: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was "Understand-Anything (Egonex-AI) install…, now "Understand-Anything (Egonex-AI)
+    install…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-18T21:32:51.782697+00:00'
+  source_episodes:
+  - 20260618_141225_14d022
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781818371.7826974
+- id: CAND-1781829809-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,743/8,000
+    chars. Adding this entry (789 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''open-notebook MCP (2026-06-18): FastMCP…, now ''video_analysis (skill `media/fallback-l…)'
+  rationale: 'observed in session 20260618_173: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''open-notebook MCP (2026-06-18):
+    FastMCP…, now ''video_analysis (skill `media/fallback-l…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-19T00:43:29.068862+00:00'
+  source_episodes:
+  - 20260618_173402_390e0d
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781829809.0688622
+- id: CAND-1781829869-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''liteparse
+    (2026-06-18): Rust PDF parser at C:\\Data\\Hermes\\~\\_root\\liteparse, installed
+    as `liteparse 2.1.1` (PyO3 binding, editable via `maturin dev…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''add''); `content`
+    (was ''liteparse (2026-06-18): Rust PDF parser…, now ''open-notebook MCP (2026-06-18):
+    FastMCP…)'
+  rationale: 'observed in session 20260618_173: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''replace'', now ''add''); `content` (was ''liteparse (2026-06-18): Rust
+    PDF parser…, now ''open-notebook MCP (2026-06-18): FastMCP…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-19T00:44:29.016602+00:00'
+  source_episodes:
+  - 20260618_173402_390e0d
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781829869.0166025
+- id: CAND-1781833965-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,152/8,000
+    chars. Adding this entry (887 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''VoxCPM TTS (2026-06-18): Local TTS MCP…, now ''liteparse MCP (2026-06-18):
+    registered…)'
+  rationale: 'observed in session 20260618_180: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''VoxCPM TTS (2026-06-18): Local
+    TTS MCP…, now ''liteparse MCP (2026-06-18): registered…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-19T01:52:45.435112+00:00'
+  source_episodes:
+  - 20260618_180240_e156ee
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781833965.4351122
+- id: CAND-1781833985-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,152/8,000
+    chars. Adding this entry (887 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was ''VoxCPM TTS (2026-06-18): Local TTS
+    MCP…, now ''VoxCPM TTS MCP (2026-06-18): Local TTS…)'
+  rationale: 'observed in session 20260618_180: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''VoxCPM TTS (2026-06-18): Local TTS MCP…, now ''VoxCPM TTS MCP (2026-06-18):
+    Local TTS…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-19T01:53:05.105944+00:00'
+  source_episodes:
+  - 20260618_180240_e156ee
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781833985.1059442
+- id: CAND-1781836030-memory
+  trigger: 'tool `memory` errored: {"error": "content is required for ''replace''
+    action.", "success": false}'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260618_180: the same `memory` call with overlapping
+    args (action, old_text, target) succeeded after the failure by changing nothing
+    obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-19T02:27:10.733209+00:00'
+  source_episodes:
+  - 20260618_180240_e156ee
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781836030.7332091
+- id: CAND-1781933949-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,670/8,000
+    chars. Adding this entry (1425 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''source-credibility-mcp: Hermes source-c…, now ''FastMCP gotcha: NO `from
+    __future__ imp…)'
+  rationale: 'observed in session 20260619_213: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''source-credibility-mcp: Hermes
+    source-c…, now ''FastMCP gotcha: NO `from __future__ imp…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T05:39:09.123266+00:00'
+  source_episodes:
+  - 20260619_213758_58c0d7
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781933949.1232662
+- id: CAND-1781982674-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,764/8,000
+    chars. Adding this entry (1205 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was "Hermes dashboard web build: `node_modul…, now ''Webwright: Firefox only.
+    HERMES_HOME=C:…)'
+  rationale: 'observed in session 20260619_210: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was "Hermes dashboard web build: `node_modul…,
+    now ''Webwright: Firefox only. HERMES_HOME=C:…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T19:11:14.586108+00:00'
+  source_episodes:
+  - 20260619_210348_e85a6a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781982674.5861082
+- id: CAND-1781983847-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,674/8,000
+    chars. Adding this entry (536 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was ''Hermes venv Python MCPs (research-proje…,
+    now ''When asked to handle "any other loose e…); `target` (was ''memory'', now
+    ''user'')'
+  rationale: 'observed in session 20260619_210: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''Hermes venv Python MCPs (research-proje…, now ''When asked to handle "any
+    other loose e…); `target` (was ''memory'', now ''user'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T19:30:47.593402+00:00'
+  source_episodes:
+  - 20260619_210348_e85a6a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781983847.5934026
+- id: CAND-1781983862-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 1,250/1,375
+    chars. Adding this entry (240 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''Bill accepts deliberate skips as long a…, now ''When asked to handle "any
+    other loose e…)'
+  rationale: 'observed in session 20260619_210: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''Bill accepts deliberate skips
+    as long a…, now ''When asked to handle "any other loose e…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T19:31:02.862376+00:00'
+  source_episodes:
+  - 20260619_210348_e85a6a
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781983862.862376
+- id: CAND-1781998520-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,674/8,000
+    chars. Adding this entry (822 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''§\nGmail-for-Hermes (durable): bobup789…, now ''VoxCPM TTS (2026-06-18):
+    isolated venv…)'
+  rationale: 'observed in session 20260620_123: the same `memory` call with overlapping
+    args (action, content, old_text, target) succeeded after the failure by changing
+    `action` (was ''add'', now ''replace''); `content` (was ''§\nGmail-for-Hermes
+    (durable): bobup789…, now ''VoxCPM TTS (2026-06-18): isolated venv…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T23:35:20.623878+00:00'
+  source_episodes:
+  - 20260620_123427_cf4a78
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781998520.623878
+- id: CAND-1781998529-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,674/8,000
+    chars. Adding this entry (822 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was ''§\nGmail-for-Hermes (durable): bobup789…,
+    now ''Gmail-for-Hermes (durable, 2026-06-20):…)'
+  rationale: 'observed in session 20260620_123: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''§\nGmail-for-Hermes (durable): bobup789…, now ''Gmail-for-Hermes (durable,
+    2026-06-20):…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-20T23:35:29.676879+00:00'
+  source_episodes:
+  - 20260620_123427_cf4a78
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1781998529.67688
+- id: CAND-1782058374-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Replacement would
+    put memory at 8,014/8,000 chars. Shorten the new content, or ''remove'' other
+    stale or less important entries to make room (see current_entries below), the…'
+  action: 'retry `memory` with: `content` (was ''markitdown + OCR (2026-06-18, model
+    swa…, now ''markitdown + OCR (2026-06-18, model swa…)'
+  rationale: 'observed in session 20260621_073: the same `memory` call with overlapping
+    args (action, content, old_text, target) succeeded after the failure by changing
+    `content` (was ''markitdown + OCR (2026-06-18, model swa…, now ''markitdown +
+    OCR (2026-06-18, model swa…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T16:12:54.097917+00:00'
+  source_episodes:
+  - 20260621_073851_1d471f
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782058374.0979168
+- id: CAND-1782070339-memory
+  trigger: 'tool `memory` errored: {"error": "old_text is required for ''remove''
+    action.", "success": false}'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260621_121: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing nothing obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T19:32:19.979601+00:00'
+  source_episodes:
+  - 20260621_121820_7fe409
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782070339.9796014
+- id: CAND-1782070428-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,575/8,000
+    chars. Adding this entry (701 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was "autoresearch skill (2026-06-21, v1.1.0)…, now ''liteparse + MCP (2026-06-18):
+    Rust PDF…)'
+  rationale: 'observed in session 20260621_121: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was "autoresearch skill (2026-06-21,
+    v1.1.0)…, now ''liteparse + MCP (2026-06-18): Rust PDF…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T19:33:48.234486+00:00'
+  source_episodes:
+  - 20260621_121820_7fe409
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782070428.2344863
+- id: CAND-1782070477-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,463/8,000
+    chars. Adding this entry (701 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was "autoresearch skill (2026-06-21, v1.1.0)…,
+    now ''autoresearch skill (2026-06-21 v1.1.0):…)'
+  rationale: 'observed in session 20260621_121: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was "autoresearch skill (2026-06-21, v1.1.0)…, now ''autoresearch skill (2026-06-21
+    v1.1.0):…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T19:34:37.938468+00:00'
+  source_episodes:
+  - 20260621_121820_7fe409
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782070477.9384687
+- id: CAND-1782077984-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,910/8,000
+    chars. Adding this entry (682 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace''); `content`
+    (was ''Avoid restarting the Hermes gateway / a…, now ''last30days skill v3.6.0:
+    last-30-days s…)'
+  rationale: 'observed in session 20260621_085: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace''); `content` (was ''Avoid restarting the Hermes gateway
+    / a…, now ''last30days skill v3.6.0: last-30-days s…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T21:39:44.465997+00:00'
+  source_episodes:
+  - 20260621_085954_8088c9
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782077984.465998
+- id: CAND-1782078033-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,323/8,000
+    chars. Adding this entry (678 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `content` (was ''Avoid restarting the Hermes gateway
+    / a…, now ''Avoid restarting the Hermes gateway / a…)'
+  rationale: 'observed in session 20260621_085: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''Avoid restarting the Hermes gateway / a…, now ''Avoid restarting the Hermes
+    gateway / a…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T21:40:33.014597+00:00'
+  source_episodes:
+  - 20260621_085954_8088c9
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782078033.0145974
+- id: CAND-1782081076-memory
+  trigger: 'tool `memory` errored: {"error": "old_text is required for ''replace''
+    action.", "success": false}'
+  action: 'retry `memory` with: rerun with same args'
+  rationale: 'observed in session 20260621_085: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing nothing
+    obvious.'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-21T22:31:16.257863+00:00'
+  source_episodes:
+  - 20260621_085954_8088c9
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782081076.2578635
+- id: CAND-1782103963-delegate_task
+  trigger: 'tool `delegate_task` errored: {"error": "Provide either ''goal'' (single
+    task) or ''tasks'' (batch)."}'
+  action: 'retry `delegate_task` with: rerun with same args'
+  rationale: 'observed in session 20260621_210: the same `delegate_task` call with
+    overlapping args (role, toolsets) succeeded after the failure by changing nothing
+    obvious.'
+  scope: tool:delegate_task
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-22T04:52:43.043577+00:00'
+  source_episodes:
+  - 20260621_210821_2fca26
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782103963.0435774
+- id: CAND-1782106140-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Replacement would
+    put memory at 8,404/8,000 chars. Shorten the new content, or ''remove'' other
+    stale or less important entries to make room (see current_entries below), the…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''remove'')'
+  rationale: 'observed in session 20260621_210: the same `memory` call with overlapping
+    args (action, old_text) succeeded after the failure by changing `action` (was
+    ''replace'', now ''remove'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-22T05:29:00.937548+00:00'
+  source_episodes:
+  - 20260621_210821_2fca26
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782106140.9375489
+- id: CAND-1782106284-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''last30days
+    skill v3.6.0: last-30-days search across Reddit/X/YouTube/TikTok/IG/HN/Polymarket/GitHub/web/Bluesky/TruthSocial/Digg.
+    Junction C:\\\\Data\\\\…'
+  action: 'retry `memory` with: `action` (was ''replace'', now ''add''); `content`
+    (was ''last30days + Trade Vision (2026-06-21):…, now ''Trade Vision (2026-06-21):
+    0-7 DTE cove…)'
+  rationale: 'observed in session 20260621_210: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''replace'', now ''add''); `content` (was ''last30days + Trade Vision (2026-06-21):…,
+    now ''Trade Vision (2026-06-21): 0-7 DTE cove…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-22T05:31:24.205641+00:00'
+  source_episodes:
+  - 20260621_210821_2fca26
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782106284.2056415
+- id: CAND-1782120088-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''VoxCPM
+    TTS (2026-06-18): isolated venv C:\\\\Data\\\\Hermes\\\\~\\\\VoxCPM\\\\.venv,
+    9 tools (synthesize/describe/clone/load/unload/health/info/list/clea…'
+  action: 'retry `memory` with: `old_text` (was ''VoxCPM TTS (2026-06-18): isolated
+    venv…, now ''VoxCPM TTS'')'
+  rationale: 'observed in session 20260621_210: the same `memory` call with overlapping
+    args (action, old_text) succeeded after the failure by changing `old_text` (was
+    ''VoxCPM TTS (2026-06-18): isolated venv…, now ''VoxCPM TTS'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-22T09:21:28.246418+00:00'
+  source_episodes:
+  - 20260621_210821_2fca26
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782120088.2464185
+- id: CAND-1782120116-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,183/8,000
+    chars. Adding this entry (934 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remove…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''replace'')'
+  rationale: 'observed in session 20260621_210: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `action`
+    (was ''add'', now ''replace'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-22T09:21:56.341793+00:00'
+  source_episodes:
+  - 20260621_210821_2fca26
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782120116.3417935
+- id: CAND-1782252622-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 7,753/8,000
+    chars. Adding this entry (1396 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''remov…'
+  action: 'retry `memory` with: `content` (was ''Hermes venv vs system Python (3.11
+    vs 3…, now "Parallel-install env-leak pattern (2026…)'
+  rationale: 'observed in session 20260623_114: the same `memory` call with overlapping
+    args (action, content, target) succeeded after the failure by changing `content`
+    (was ''Hermes venv vs system Python (3.11 vs 3…, now "Parallel-install env-leak
+    pattern (2026…).'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-23T22:10:22.255409+00:00'
+  source_episodes:
+  - 20260623_114759_ebc66bdb
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782252622.2554097
+- id: CAND-1782256062-memory
+  trigger: 'tool `memory` errored: {"error": "Unknown action ''list''. Use: add, replace,
+    remove", "success": false}'
+  action: 'retry `memory` with: `action` (was ''list'', now ''add'')'
+  rationale: 'observed in session 20260623_114: the same `memory` call with overlapping
+    args (action) succeeded after the failure by changing `action` (was ''list'',
+    now ''add'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-23T23:07:42.779971+00:00'
+  source_episodes:
+  - 20260623_114759_ebc66bdb
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782256062.7799718
+- id: CAND-1782282316-memory
+  trigger: 'tool `memory` errored: {"error": "Unknown action ''list''. Use: add, replace,
+    remove", "success": false}'
+  action: 'retry `memory` with: `action` (was ''list'', now ''add'')'
+  rationale: 'observed in session 20260623_114: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''list'',
+    now ''add'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-24T06:25:16.131453+00:00'
+  source_episodes:
+  - 20260623_114759_ebc66bdb
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782282316.1314538
+- id: CAND-1782282325-memory
+  trigger: 'tool `memory` errored: {"error": "Unknown action ''list''. Use: add, replace,
+    remove", "success": false}'
+  action: 'retry `memory` with: `action` (was ''list'', now ''replace'')'
+  rationale: 'observed in session 20260623_114: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''list'',
+    now ''replace'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-24T06:25:25.748418+00:00'
+  source_episodes:
+  - 20260623_114759_ebc66bdb
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782282325.748418
+- id: CAND-1782355448-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "Memory at 11,703/12,000
+    chars. Adding this entry (1590 chars) would exceed the limit. Consolidate now:
+    use ''replace'' to merge overlapping entries into shorter ones or ''rem…'
+  action: 'retry `memory` with: `action` (was ''add'', now ''remove'')'
+  rationale: 'observed in session 20260624_145: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''add'',
+    now ''remove'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-25T02:44:08.484489+00:00'
+  source_episodes:
+  - 20260624_145517_65ab4d2e
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782355448.48449
+- id: CAND-1782355525-memory
+  trigger: 'tool `memory` errored: {"success": false, "error": "No entry matched ''Parallel-install
+    env-leak pattern (2026-06-23): When spawning a process under a sibling Hermes
+    install (e.g. C:\\\\Data\\\\Hermes312 alongside C:\\\\Data…'
+  action: 'retry `memory` with: `action` (was ''remove'', now ''add'')'
+  rationale: 'observed in session 20260624_145: the same `memory` call with overlapping
+    args (action, target) succeeded after the failure by changing `action` (was ''remove'',
+    now ''add'').'
+  scope: tool:memory
+  counterexample_conditions: if the underlying error mode changes (e.g. network vs.
+    permissions), this fix is not the right answer. Verify the error class before
+    re-applying.
+  observed_count: 1
+  last_validated: '2026-06-25T02:45:25.810730+00:00'
+  source_episodes:
+  - 20260624_145517_65ab4d2e
+  status: pending_review
+  profile_id: default
+  source: auto_capture
+  ts: 1782355525.810731

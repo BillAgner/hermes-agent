@@ -1,0 +1,908 @@
+{
+  "version": 2,
+  "started_at": "2026-06-21T11:49:30+00:00",
+  "last_run": "2026-06-25T06:13:52+00:00",
+  "last_clean": "2026-06-25T06:13:52+00:00",
+  "services": {
+    "gateway": {
+      "ok": true,
+      "msg": "HTTP 200, PID ? unverified",
+      "last_check": "2026-06-25T06:13:44+00:00",
+      "consecutive_failures": 0
+    },
+    "docker": {
+      "ok": true,
+      "msg": "docker v29.5.2 (395ms), 8 containers Up",
+      "last_check": "2026-06-25T06:13:44+00:00",
+      "consecutive_failures": 0
+    },
+    "wsl": {
+      "ok": true,
+      "msg": "WSL: docker-desktop=Running, hermes-tools=Running (active OK)",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 0
+    },
+    "honcho": {
+      "ok": true,
+      "msg": "Honcho /health OK ({\"status\":\"ok\"})",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 0
+    },
+    "open_notebook": {
+      "ok": true,
+      "msg": "Open Notebook HTTP 200",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 0
+    },
+    "memory_tiers": {
+      "ok": false,
+      "msg": "cold_tier.db missing; warm_tier.qdrant/ missing",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 136
+    },
+    "disk_space": {
+      "ok": true,
+      "msg": "disk free 281.3GB",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 0
+    },
+    "heartbeat": {
+      "ok": true,
+      "msg": "state.db-wal heartbeat 0.2m old",
+      "last_check": "2026-06-25T06:13:46+00:00",
+      "consecutive_failures": 0
+    },
+    "mcp:tradingview": {
+      "ok": false,
+      "msg": "binary probe exit 1: Traceback (most recent call last):   File \"<frozen runpy>\", line 198, in _run_mo",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 3,
+      "service": "tradingview"
+    },
+    "mcp:tradingview_desktop": {
+      "ok": true,
+      "msg": "binary probe OK (node)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "tradingview_desktop"
+    },
+    "mcp:markitdown": {
+      "ok": true,
+      "msg": "binary probe OK (markitdown-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "markitdown"
+    },
+    "mcp:liteparse": {
+      "ok": true,
+      "msg": "binary probe OK (liteparse-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "liteparse"
+    },
+    "mcp:open_notebook": {
+      "ok": true,
+      "msg": "HTTP 200 from http://127.0.0.1:5055/api/notebooks",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "open_notebook"
+    },
+    "mcp:research_project": {
+      "ok": true,
+      "msg": "binary probe OK (research-project-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "research_project"
+    },
+    "mcp:voxcpm": {
+      "ok": false,
+      "msg": "binary probe exit 1: Traceback (most recent call last):   File \"<frozen runpy>\", line 198, in _run_mo",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 1,
+      "service": "voxcpm"
+    },
+    "mcp:source_credibility": {
+      "ok": true,
+      "msg": "binary probe OK (source-credibility-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "source_credibility"
+    },
+    "mcp:time_series": {
+      "ok": true,
+      "msg": "binary probe OK (time-series-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "time_series"
+    },
+    "mcp:tasks": {
+      "ok": true,
+      "msg": "binary probe OK (tasks-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "tasks"
+    },
+    "mcp:google_workspace": {
+      "ok": true,
+      "msg": "binary probe OK (google-workspace-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "google_workspace"
+    },
+    "mcp:forge_mcp": {
+      "ok": true,
+      "msg": "binary probe OK (forge-mcp.exe)",
+      "last_check": "2026-06-25T06:13:52+00:00",
+      "consecutive_failures": 0,
+      "service": "forge_mcp"
+    }
+  },
+  "recovery_history": [
+    {
+      "ts": "2026-06-25T05:26:47+00:00",
+      "service": "gateway",
+      "action": "restart",
+      "ok": false,
+      "msg": "restarted but probe still failing after 25s: URLError: [WinError 10061] No connection could be made because the target machine actively refused it"
+    },
+    {
+      "ts": "2026-06-25T05:26:52+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:27:17+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:27:17+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:27:17+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:27:17+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:28:47+00:00",
+      "service": "gateway",
+      "action": "restart",
+      "ok": false,
+      "msg": "restarted but probe still failing after 25s: URLError: [WinError 10061] No connection could be made because the target machine actively refused it"
+    },
+    {
+      "ts": "2026-06-25T05:28:52+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:29:17+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:29:17+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:29:17+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:29:17+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:30:15+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:32:29+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:32:29+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:32:29+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:32:30+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:34:49+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:35:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:35:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:35:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:35:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:36:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:37:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:37:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:37:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:37:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:38:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:39:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:39:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:39:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:39:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:40:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:41:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:41:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:41:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:41:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:42:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:43:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:43:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:43:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:43:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:44:49+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:45:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:45:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:45:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:45:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:46:49+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:47:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:47:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:47:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:47:49+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:48:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:49:50+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:49:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:49:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:49:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:50:49+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:51:48+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:51:48+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:51:48+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:51:48+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:52:48+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:53:49+00:00",
+      "service": "markitdown",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:53:49+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:53:49+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:53:49+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:54:49+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:55:52+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:55:52+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:55:52+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:56:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:57:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:57:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:57:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:58:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T05:59:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:59:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T05:59:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:00:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T06:01:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:01:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:01:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:02:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T06:03:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:03:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:03:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:04:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T06:05:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:05:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:05:50+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:06:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: uvx --from tradingview-mcp-server tradingview-mcp"
+    },
+    {
+      "ts": "2026-06-25T06:06:53+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 1, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T06:07:50+00:00",
+      "service": "liteparse",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:07:50+00:00",
+      "service": "source_credibility",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 0, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:07:53+00:00",
+      "service": "forge_mcp",
+      "action": "recover",
+      "ok": false,
+      "msg": "killed 1, respawn failed: FileNotFoundError: [WinError 2] The system cannot find the file specified"
+    },
+    {
+      "ts": "2026-06-25T06:08:50+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T06:08:50+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    },
+    {
+      "ts": "2026-06-25T06:12:52+00:00",
+      "service": "tradingview",
+      "action": "recover",
+      "ok": false,
+      "msg": "no_respawn=true \u2014 stdio MCP: binary probe is the health signal, no daemon to restart"
+    },
+    {
+      "ts": "2026-06-25T06:12:52+00:00",
+      "service": "voxcpm",
+      "action": "recover",
+      "ok": true,
+      "msg": "killed 0, spawned: C:\\Data\\Hermes\\~\\VoxCPM\\.venv\\Scripts\\voxcpm-mcp.exe"
+    }
+  ],
+  "dependency_map": {
+    "dashboard": [
+      "gateway"
+    ],
+    "gateway": [
+      "docker"
+    ],
+    "honcho": [
+      "honcho-api-1",
+      "honcho-database-1",
+      "honcho-redis-1"
+    ],
+    "open_notebook": [
+      "open-notebook-local-surrealdb-1",
+      "open-notebook-local-open_notebook-1"
+    ],
+    "qdrant": [
+      "qdrant-research"
+    ],
+    "speaches": [
+      "speaches"
+    ],
+    "memory": [
+      "cold_tier.db",
+      "warm_tier.qdrant"
+    ],
+    "voxcpm": [],
+    "liteparse": [],
+    "markitdown": [],
+    "tradingview": []
+  },
+  "consecutive_failures": {
+    "gateway": 0,
+    "docker": 0,
+    "wsl": 0,
+    "honcho": 0,
+    "open_notebook": 0,
+    "memory_tiers": 136,
+    "disk_space": 0,
+    "heartbeat": 0,
+    "mcp:tradingview": 3,
+    "mcp:tradingview_desktop": 0,
+    "mcp:markitdown": 0,
+    "mcp:liteparse": 0,
+    "mcp:open_notebook": 0,
+    "mcp:research_project": 0,
+    "mcp:voxcpm": 1,
+    "mcp:source_credibility": 0,
+    "mcp:time_series": 0,
+    "mcp:tasks": 0,
+    "mcp:google_workspace": 0,
+    "mcp:forge_mcp": 0
+  },
+  "recovery_attempts": {
+    "mcp:tradingview": 2,
+    "mcp:research_project": 59,
+    "mcp:google_workspace": 59,
+    "gateway": 9,
+    "mcp:markitdown": 58,
+    "mcp:liteparse": 65,
+    "mcp:source_credibility": 65,
+    "mcp:forge_mcp": 65,
+    "mcp:voxcpm": 0
+  },
+  "last_alert": "2026-06-25T06:11:55+00:00",
+  "alert_fingerprint": "mcp:tradingview,mcp:voxcpm,memory_tiers"
+}

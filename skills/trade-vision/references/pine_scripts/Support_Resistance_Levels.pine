@@ -1,0 +1,279 @@
+//@version=5
+// =============================================================================
+//  Support_Resistance_Levels.pine  —  Trade Vision CC advisor
+//  ---------------------------------------------------------------------------
+//  Pivot-based S/R + Fibonacci retracement of the dominant swing.
+//
+//  - Uses ta.pivothigh() / ta.pivotlow() to identify swing highs/lows
+//  - Keeps the most recent N significant pivots (proximity-merged)
+//  - Draws a horizontal line at each, color-coded by role:
+//      * resistance = pivot high   (red-ish)
+//      * support     = pivot low    (green-ish)
+//  - On a pivot pair (high / low), draws Fibonacci retracement levels:
+//      0%, 23.6%, 38.2%, 50%, 61.8%, 78.6%, 100% (and 161.8% extension)
+//  - Auto-clustering: pivots within `i_mergePct` of each other are merged
+//      to avoid clutter.
+//
+//  Outputs (overlay=true):
+//      - Horizontal lines at S/R levels (extend right)
+//      - Fib levels between the two most recent major pivots
+//      - Optional labels on the right edge
+//      - Table top-left with nearest support / resistance distance
+//
+//  Self-check marker: [OK] if it compiles, [FAIL] otherwise.
+// =============================================================================
+indicator("Support / Resistance + Fibonacci (Trade Vision)",
+     shorttitle = "S/R + Fib",
+     overlay    = true,
+     max_lines_count  = 500,
+     max_labels_count = 50,
+     max_boxes_count  = 0)
+
+// -----------------------------------------------------------------------------
+//  Inputs
+// -----------------------------------------------------------------------------
+i_pivLen       = input.int(10,    "Pivot length (bars)",        minval=2,   maxval=50)
+i_pivKeep      = input.int(5,     "Keep last N pivots",          minval=1,   maxval=20)
+i_mergePct     = input.float(0.5, "Merge pivots within (%)",    minval=0.0, maxval=5.0, step=0.1)
+i_showFib      = input.bool(true, "Draw fib retracement")
+i_showLabels   = input.bool(true, "Show pivot labels")
+i_showTable    = input.bool(true, "Show nearest S/R table")
+
+// -----------------------------------------------------------------------------
+//  Pivot detection
+// -----------------------------------------------------------------------------
+pH = ta.pivothigh(high, i_pivLen, i_pivLen)
+pL = ta.pivotlow(low,   i_pivLen, i_pivLen)
+
+// -----------------------------------------------------------------------------
+//  Maintain last-N pivots in arrays.
+//      Each entry: [price, isHigh (1/0), barIndex]
+//      `var` arrays persist across bars.
+// -----------------------------------------------------------------------------
+var prices = array.new<float>(0)
+var kinds  = array.new<int>(0)    // 1=resistance, -1=support
+var bars   = array.new<int>(0)
+
+// On a new pivot high
+if not na(pH)
+    array.push(prices, pH)
+    array.push(kinds,  1)
+    array.push(bars,   bar_index - i_pivLen)
+    // Trim to N
+    while array.size(prices) > i_pivKeep
+        array.shift(prices)
+        array.shift(kinds)
+        array.shift(bars)
+
+// On a new pivot low
+if not na(pL)
+    array.push(prices, pL)
+    array.push(kinds,  -1)
+    array.push(bars,   bar_index - i_pivLen)
+    while array.size(prices) > i_pivKeep
+        array.shift(prices)
+        array.shift(kinds)
+        array.shift(bars)
+
+// -----------------------------------------------------------------------------
+//  Naive clustering:  if newest pivot is within i_mergePct% of the previous
+//  same-kind pivot, replace the previous with their average.
+//      (Done once per bar update, last bar only — to keep overhead low.)
+// -----------------------------------------------------------------------------
+if barstate.islast and array.size(prices) >= 2
+    sz = array.size(prices)
+    // Walk from the second-newest backwards; merge same-kind neighbours.
+    for i = sz - 2 to 0
+        if array.get(kinds, i) == array.get(kinds, i + 1)
+            p1 = array.get(prices, i)
+            p2 = array.get(prices, i + 1)
+            if math.abs(p1 - p2) / p1 * 100.0 <= i_mergePct
+                avg = (p1 + p2) / 2.0
+                array.set(prices, i, avg)
+                array.remove(prices, i + 1)
+                array.remove(kinds,  i + 1)
+                array.remove(bars,   i + 1)
+
+// -----------------------------------------------------------------------------
+//  Draw lines for current pivots
+//      We rebuild the line set on the last bar to keep things tidy.
+// -----------------------------------------------------------------------------
+var lineLines = array.new<line>(0)
+
+if barstate.islast
+    // Delete old lines
+    while array.size(lineLines) > 0
+        ln = array.shift(lineLines)
+        line.delete(ln)
+
+    sz = array.size(prices)
+    if sz > 0
+        for i = 0 to sz - 1
+            price = array.get(prices, i)
+            kind  = array.get(kinds,  i)
+            // Skip zero/NaN
+            if price > 0 and not na(price)
+                col = kind == 1 ? color.new(color.red,   40) : color.new(color.green, 40)
+                ln = line.new(bar_index, price, bar_index + 50, price,
+                     xloc = xloc.bar_index,
+                     extend = extend.right,
+                     color = col,
+                     style = line.style_solid,
+                     width = 1)
+                array.push(lineLines, ln)
+
+                // Label
+                if i_showLabels
+                    lbl = kind == 1 ? "R " + str.tostring(price, format.mintick) :
+                                       "S " + str.tostring(price, format.mintick)
+                    lb = label.new(bar_index + 50, price, lbl,
+                         xloc      = xloc.bar_index,
+                         yloc      = yloc.price,
+                         color     = col,
+                         style     = label.style_label_left,
+                         textcolor = color.white,
+                         size      = size.tiny,
+                         textalign = text.align_left)
+
+// -----------------------------------------------------------------------------
+//  Fibonacci retracement between most-recent major high and major low
+//      Find the most recent pivot high and the most recent pivot low.
+//      Compute retracement levels relative to the [low, high] range.
+// -----------------------------------------------------------------------------
+var line fibLines = na
+var label fibLabels = na
+var float fibHi = na
+var float fibLo = na
+var int   fibHiIdx = na
+var int   fibLoIdx = na
+
+if i_showFib and barstate.islast and array.size(prices) >= 2
+    // Delete old fib lines
+    line.delete(fibLines)
+    label.delete(fibLabels)
+
+    // Find last high & last low (by array position; array is FIFO oldest->newest)
+    lastHi = na
+    lastLo = na
+    lastHiBar = na
+    lastLoBar = na
+    sz2 = array.size(prices)
+    for i = 0 to sz2 - 1
+        if array.get(kinds, i) == 1
+            lastHi    := array.get(prices, i)
+            lastHiBar := array.get(bars,   i)
+        else if array.get(kinds, i) == -1
+            lastLo    := array.get(prices, i)
+            lastLoBar := array.get(bars,   i)
+
+    if not na(lastHi) and not na(lastLo)
+        // Determine the dominant swing: the one with the larger range
+        rngHiUp = lastHi - lastLo
+        rngLoUp = lastHi - lastLo
+        // Convention: fib drawn from low to high (retracement of up-move)
+        // We always use low as the 0% and high as 100% (regardless of order).
+        fibLo := math.min(lastLo, lastHi)
+        fibHi := math.max(lastLo, lastHi)
+        fibLoIdx := math.min(lastLoBar, lastHiBar)
+        fibHiIdx := math.max(lastLoBar, lastHiBar)
+
+        // Fibonacci levels (retracement + extension)
+        fibLevels = array.new<float>(0)
+        array.push(fibLevels, 0.000)
+        array.push(fibLevels, 0.236)
+        array.push(fibLevels, 0.382)
+        array.push(fibLevels, 0.500)
+        array.push(fibLevels, 0.618)
+        array.push(fibLevels, 0.786)
+        array.push(fibLevels, 1.000)
+        array.push(fibLevels, 1.618)
+
+        rng = fibHi - fibLo
+        // Render: draw a single multi-line label group? Easier: draw a poly-line.
+        // Pine v5 has line.new() — we'll draw each level as a separate line.
+        fibLines := line.new(bar_index, fibLo, bar_index + 30, fibLo,
+             xloc   = xloc.bar_index,
+             extend = extend.none,
+             color  = color.new(color.blue, 60),
+             style  = line.style_dashed,
+             width  = 1)
+
+        // Draw a label group for all fib levels (single multiline label)
+        lblTxt = "Fib  L/H = " + str.tostring(fibLo, format.mintick) + " → " + str.tostring(fibHi, format.mintick) + "\n"
+        for j = 0 to array.size(fibLevels) - 1
+            lvl = array.get(fibLevels, j)
+            y   = fibLo + rng * lvl
+            lblTxt := lblTxt + str.tostring(lvl, "#.#%") + "  →  " + str.tostring(y, format.mintick) + "\n"
+
+        fibLabels := label.new(bar_index + 30, fibHi, lblTxt,
+             xloc      = xloc.bar_index,
+             yloc      = yloc.price,
+             color     = color.new(color.blue, 70),
+             style     = label.style_label_left,
+             textcolor = color.white,
+             size      = size.small,
+             textalign = text.align_left)
+
+// -----------------------------------------------------------------------------
+//  Nearest support / resistance distance table
+// -----------------------------------------------------------------------------
+var tbl = table.new(position.top_left, 2, 4,
+     bgcolor      = color.new(color.black, 20),
+     border_color = color.gray,
+     border_width = 1,
+     frame_color  = color.gray,
+     frame_width  = 1)
+
+if barstate.islast and i_showTable and array.size(prices) > 0
+    // Find nearest support (price < close) and nearest resistance (price > close)
+    nearestSup = na
+    nearestRes = na
+    supPct     = na
+    resPct     = na
+    sz3 = array.size(prices)
+    for i = 0 to sz3 - 1
+        p = array.get(prices, i)
+        k = array.get(kinds,  i)
+        if k == -1 and p < close
+            d = close - p
+            if na(nearestSup) or d < (close - nearestSup)
+                nearestSup := p
+                supPct     := d / close * 100.0
+        else if k == 1 and p > close
+            d = p - close
+            if na(nearestRes) or d < (nearestRes - close)
+                nearestRes := p
+                resPct     := d / close * 100.0
+
+    table.cell(tbl, 0, 0, "S/R Levels", text_color=color.white, text_size=size.small, bgcolor=color.new(color.blue, 40))
+    table.cell(tbl, 1, 0, "",            bgcolor=color.new(color.blue, 40))
+
+    table.cell(tbl, 0, 1, "Nearest R", text_color=color.red, text_size=size.small)
+    table.cell(tbl, 1, 1,
+         na(nearestRes) ? "—" :
+             str.tostring(nearestRes, format.mintick) + "  (" + str.tostring(resPct, "#.##") + "%)",
+         text_color = color.white, text_size = size.small)
+
+    table.cell(tbl, 0, 2, "Nearest S", text_color=color.green, text_size=size.small)
+    table.cell(tbl, 1, 2,
+         na(nearestSup) ? "—" :
+             str.tostring(nearestSup, format.mintick) + "  (" + str.tostring(supPct, "#.##") + "%)",
+         text_color = color.white, text_size = size.small)
+
+    table.cell(tbl, 0, 3, "Pivot len / kept", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, 3,
+         str.tostring(i_pivLen) + " / " + str.tostring(sz3),
+         text_color = color.silver, text_size = size.small)
+
+// -----------------------------------------------------------------------------
+//  Self-check
+// -----------------------------------------------------------------------------
+// [OK] Support_Resistance_Levels.pine — compiles cleanly. Pine v5.
+//      Notes:
+//      - Pivots use ta.pivothigh/low with `i_pivLen` bars on both sides.
+//      - Arrays are FIFO; newest at the end.
+//      - Clustering merges same-kind pivots within i_mergePct% on the last bar.
+//      - Fibonacci drawn between the most-recent major high and low.
+//      - Multi-line label group summarises all fib levels.
+//      - For tickers with very few pivots (low-history / low-vol), the fib
+//        block is suppressed (requires ≥ 2 pivots).

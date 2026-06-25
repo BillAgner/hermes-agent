@@ -1,0 +1,334 @@
+- id: L-20260616-014739
+  trigger: pip install SSL error on Windows corporate network
+  action: use --trusted-host pypi.org --trusted-host files.pythonhosted.org
+  rationale: corporate proxy strips intermediate certs
+  scope: windows, pip, corporate-network
+  counterexample_conditions: on non-corporate network, --trusted-host flags are unnecessary
+  observed_count: 1
+  importance: 0.5
+  tags: []
+  last_validated: '2026-06-16T01:47:39.835273+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-192834
+  trigger: Writing or reviewing Hermes config-access code — any file under `hermes-agent/agent/`
+    or `hermes-agent/tools/` that calls `cfg_get(...)` or imports from `hermes_cli.config`.
+    Also triggers when a config-driven feature silently returns a default value at
+    runtime (the symptom of the bug).
+  action: Use `from agent._config_helpers import cfg_get_dotted` and call `cfg_get_dotted("auxiliary.foo.bar",
+    default)`. Do NOT use `from hermes_cli.config import cfg_get` followed by `cfg_get("auxiliary.foo.bar",
+    default)` — that's the broken form.
+  rationale: '`hermes_cli.config.cfg_get` is variadic on a dict: `cfg_get(cfg_dict,
+    key1, key2, ..., default=...)`. When you pass a dotted string as the first arg,
+    the function treats the dotted string AS the config dict — it''s not a dict, so
+    the function returns `default` and silently masks the bug. The dedicated `_config_helpers.cfg_get_dotted`
+    helper loads the config and traverses the dotted path properly. This pattern caused
+    8 broken call sites that were all fixed on 2026-06-16. Tests must patch `agent._config_helpers.cfg_get_dotted`
+    (NOT `hermes_cli.config.cfg_get`).'
+  scope: hermes-agent config code, dotted-path config access patterns, agent/* and
+    tools/* directories
+  counterexample_conditions: 'For direct dict access on an already-loaded config dict
+    (no dotted path, single-level key), the variadic form is correct: `cfg_get(loaded_dict,
+    "key", default=...)`. The dedicated helper is only required when the input is
+    a dotted-string path. Don''t reflexively replace every `cfg_get` call — check
+    the first arg''s shape.'
+  observed_count: 1
+  importance: 0.85
+  tags:
+  - config
+  - hermes-agent
+  - cfg_get
+  - cfg_get_dotted
+  - silent-fail
+  - migration-fix-2026-06-16
+  last_validated: '2026-06-18T19:28:34.807408+00:00'
+  source_episodes:
+  - 2026-06-16 migration fix (8 call sites)
+  status: active
+  profile_id: default
+- id: L-20260618-201454
+  trigger: 'Using liteparse''s `search_items()` standalone function with TextItem
+    list, or noticing "TypeError: ''TextItem'' object is not an instance of ''PyTextItem''"'
+  action: Use `LiteParse.search(file, phrase)` method (the patched one) instead of
+    the standalone `search_items()` function. The standalone function in the upstream
+    liteparse wrapper has a type bug — it converts native PyTextItem → wrapper TextItem
+    via `_convert_native_result`, then calls the native `_native_search_items` which
+    expects PyTextItem back. The patched method parses natively and uses native items
+    throughout."
+  rationale: The Python wrapper at `liteparse/parser.py` line 270 calls `_native_search_items(wrapper_items,
+    ...)` which fails because `wrapper_items` is `List[TextItem]` (the @dataclass)
+    but native expects `List[PyTextItem]` (the Rust struct). The fix in this fork
+    adds `LiteParse.search()` that parses natively, collects native items from `native_result.pages[].text_items`,
+    calls native search, then wraps results.
+  scope: liteparse Python wrapper at C:\Data\Hermes\~\liteparse\packages\python\liteparse\parser.py
+  counterexample_conditions: Calling `search_items(items, phrase)` where `items` is
+    a fresh list of native PyTextItem (e.g. before going through `_convert_native_result`)
+    — that path works fine.
+  observed_count: 1
+  importance: 0.7
+  tags:
+  - liteparse
+  - pdf-parsing
+  - wrapper-bug
+  last_validated: '2026-06-18T20:14:54.276708+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-201504
+  trigger: Building liteparse (or any PyO3/maturin Rust extension) into the Hermes
+    venv on Windows, or seeing "rustc, the rust compiler, is not installed" / "Couldn't
+    find a virtualenv or conda environment" from maturin
+  action: '1. Install Rust via `winget install --id Rustlang.Rustup`. Cargo ends up
+    at `C:\Users\bobup\.cargo\bin\` but NOT on PATH for new shells. 2. Run maturin
+    with both env vars: `export PATH=/c/Users/bobup/.cargo/bin:$PATH && export VIRTUAL_ENV=C:\Data\Hermes\hermes-agent\venv
+    && /c/Data/Hermes/hermes-agent/venv/Scripts/maturin.exe develop --release`. The
+    venv needs VIRTUAL_ENV set even though pyvenv.cfg exists — maturin doesn''t autodetect.
+    Build takes 2-3 min for liteparse (compiles PDFium + ~80 transitive deps)."'
+  rationale: Rustup puts cargo at a non-PATH location. maturin's venv detection looks
+    at VIRTUAL_ENV env var, not at the directory containing pyvenv.cfg. Both must
+    be set explicitly per-shell.
+  scope: Hermes venv at C:\Data\Hermes\hermes-agent\venv on Windows
+  counterexample_conditions: Running `pip install liteparse` from PyPI works in seconds
+    (prebuilt wheel) — only the source build needs Rust.
+  observed_count: 1
+  importance: 0.8
+  tags:
+  - liteparse
+  - maturin
+  - rust
+  - build
+  last_validated: '2026-06-18T20:15:04.454652+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-202506
+  trigger: 'Building a new MCP server with FastMCP, or seeing `TypeError: issubclass()
+    arg 1 must be a class` at the first @mcp.tool() decorator at import time'
+  action: '1. Do NOT use `from __future__ import annotations` in any file that defines
+    @mcp.tool() functions. FastMCP inspects parameter annotations via `inspect.signature`,
+    and with future-annotations ALL annotations become strings. Then `issubclass("str",
+    Context)` raises `TypeError: issubclass() arg 1 must be a class` at import time,
+    before the MCP server ever serves a request. 2. Do NOT use `Optional[X]` annotations
+    on @mcp.tool() params either — `Optional[X]` becomes `Union[X, None]` and FastMCP''s
+    introspection also chokes. Use bare `X = None` (param.annotation stays as the
+    class)."'
+  rationale: FastMCP 1.x's `Tool.from_function()` calls `issubclass(param.annotation,
+    Context)` on every parameter. PEP 563 / future-annotations turn annotations into
+    strings, breaking that. `typing.Optional[X]` becomes `typing.Union[X, None]`,
+    also not a class. Both crash at module import time when the tool decorator runs."
+  scope: Any file using mcp.server.fastmcp.FastMCP @mcp.tool() decorators (liteparse-mcp,
+    markitdown-mcp, and any future MCP server)
+  counterexample_conditions: Plain functions (not MCP tools) with `from __future__
+    import annotations` and `Optional[X]` work fine in modern Python — this rule applies
+    only to @mcp.tool() decorated functions and any other callables FastMCP inspects.
+  observed_count: 1
+  importance: 0.8
+  tags:
+  - mcp
+  - fastmcp
+  - annotations
+  - build-gotcha
+  - liteparse
+  last_validated: '2026-06-18T20:25:06.257624+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-212054
+  trigger: Creating a Windows directory junction from MSYS bash (git-bash / MINGW64)
+    using `cmd //c "mklink /J ..."` or `cmd /c "mklink ..."` with the target path
+    quoted as part of a single string, or seeing `dir` report "File Not Found" inside
+    a junction that cmd itself just created.
+  action: 'Invoke cmd with mklink args as an array (PowerShell: `& cmd.exe /c mklink
+    /J arg1 arg2` with positional args), OR run `mklink` from a native Windows shell
+    (cmd.exe directly, or PowerShell). Do NOT pass a single quoted-string command
+    line like `cmd /c "mklink /J \"path1\" \"path2\""` from MSYS bash — MSYS path-mangling
+    prepends an extra `C:\` to the target and you get a junction whose target is `C:\C:\...`
+    (resolves to nothing). Verify after creation with `fsutil reparsepoint query <link>`
+    or `cmd /c dir /AL <parent>` — the target column should be a single `C:\...` path.'
+  rationale: MSYS bash translates POSIX-style paths when invoking Windows tools. When
+    a single argument contains backslashes that are also shell-quote delimiters, MSYS's
+    argv construction mangles the boundary and cmd receives a target that already
+    has `C:\` glued onto the front. PowerShell's `& cmd.exe /c mklink /J arg1 arg2`
+    passes them as separate argv items that MSYS doesn't munge, and PowerShell's own
+    path handling is correct. Native cmd.exe (without MSYS) doesn't have the problem.
+  scope: Windows, MSYS bash, git-bash, MINGW64, mklink /J, mklink /D, directory junctions,
+    symlinks, PowerShell + cmd interop
+  counterexample_conditions: Running `mklink /J` from cmd.exe directly (no MSYS layer)
+    — single-quoted string works fine. Creating files with `touch` or `echo` from
+    MSYS bash — those don't go through cmd and don't have the path-mangling issue.
+    Symlinks (mklink /D) in `C:\Users\<user>\` from MSYS bash — that's a different
+    failure mode (privilege), not this quoting bug.
+  observed_count: 1
+  importance: 0.75
+  tags:
+  - windows
+  - msys
+  - mklink
+  - junction
+  - path-quoting
+  last_validated: '2026-06-18T21:20:54.350661+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-212109
+  trigger: 'Installing a Claude-Code-style plugin (Understand-Anything, or any plugin
+    whose SKILL.md hardcodes `$HOME/.understand-anything-plugin` or similar `~/.<plugin>-plugin`
+    lookup) into a Hermes host where HERMES_HOME is non-canonical (e.g. `C:\Data\Hermes`
+    instead of `%USERPROFILE%\.hermes`). Symptom: `/understand` (or equivalent) fails
+    at Phase 0.5 with "Cannot find the plugin root" after listing the candidates it
+    checked.'
+  action: 'In addition to the skills junction (folder-style), create a SECOND directory
+    junction at `$HOME/.<plugin>-plugin` → `<repo>/<plugin-dir>`. For Understand-Anything
+    on Bill''s host: `cmd /c mklink /J "C:\Users\bobup\.understand-anything-plugin"
+    "C:\Data\Hermes\~\Understand-Anything\understand-anything-plugin"`. The UA skill''s
+    Phase 0.5 plugin-root resolver checks `$HOME/.understand-anything-plugin` as one
+    of several candidates; this junction makes that path resolve even when Hermes
+    is installed at a non-canonical location. Idempotent install script at `C:\Data\Hermes\scripts\install_understand_anything_link.ps1`.
+    Mklink /J junctions inside the user''s own profile don''t require admin.'
+  rationale: 'Upstream plugins like Understand-Anything hardcode common install paths
+    (e.g. `$HOME/.understand-anything-plugin`) as plugin-root lookup candidates. When
+    the host''s actual HERMES_HOME diverges from the user''s `$HOME` (Bill''s setup:
+    HERMES_HOME=C:\Data\Hermes but HOME=/c/Users/bobup), the skills-junction alone
+    is not enough — the runtime plugin-root lookup still fails. The fix is a second
+    junction at the canonical user-home path so the upstream lookup finds the plugin.
+    This pattern will recur for any third-party Claude Code plugin installed into
+    a non-canonical Hermes.'
+  scope: Hermes non-canonical installs, Claude Code plugin ports (Understand-Anything,
+    future similar), Windows + MSYS bash, $HOME != HERMES_HOME
+  counterexample_conditions: Standard Hermes install at `%USERPROFILE%\.hermes\` (HERMES_HOME
+    matches $HOME) — the upstream `install.sh hermes` works as-is, no extra junction
+    needed. Pure Claude Code / Cursor / Copilot users — those platforms set their
+    own plugin-root env var (CLAUDE_PLUGIN_ROOT) and don't need the home junction.
+  observed_count: 1
+  importance: 0.7
+  tags:
+  - understand-anything
+  - hermes
+  - non-canonical-install
+  - plugin-root
+  - junction
+  last_validated: '2026-06-18T21:21:09.120626+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260618-224208
+  trigger: 'Python script via `python << EOF` heredoc in MSYS bash fails with `bash:
+    line N: {var}: command not found` (where var was meant to be a Python f-string
+    substitution), or seeing your LLM prompt arrive empty/mangled after passing through
+    a heredoc.'
+  action: 'When running Python scripts via the terminal tool with a heredoc that interpolates
+    user-supplied content into a JSON template, use explicit string concatenation
+    or `.format()` rather than f-strings. MSYS bash''s heredoc passes content through
+    PowerShell-like escape handling that treats single `{` and `}` as placeholder
+    syntax and emits `bash: line N: {src}: command not found`. Safe pattern: `user_prompt
+    = ''...'' + variable + ''...''`. Avoid f-string braces inside heredoc bodies;
+    if f-strings are required, escape braces with double-braces (`{{` / `}}`), which
+    is brittle when the JSON template has many braces.'
+  rationale: 'MSYS bash''s heredoc handling differs from native bash: it passes the
+    heredoc body through the bash parser for variable expansion AND command substitution,
+    treating `{...}` patterns as command-substitution attempts. f-strings embed `{var}`
+    patterns that bash then tries to execute. The escape is to use string concatenation
+    or explicit `%s` formatting that bash sees as opaque text.'
+  scope: Hermes terminal tool, MSYS bash, heredocs to python, f-string interpolation,
+    JSON template generation
+  counterexample_conditions: Running the same Python script via `python file.py` where
+    the script is saved on disk — heredoc quoting isn't involved. f-strings work fine
+    there. Running with `python -c "..."` on a single line — no heredoc. Use `bash
+    -c 'python << EOF ... EOF'` directly (not through terminal tool's MSYS layer)
+    — MSYS interpolation doesn't fire.
+  observed_count: 1
+  importance: 0.65
+  tags:
+  - msys
+  - heredoc
+  - python
+  - f-string
+  - json-template
+  last_validated: '2026-06-18T22:42:08.130828+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260620-194354
+  trigger: User asks to act on an item whose state was last set in a prior tool call
+    this session, or references work from a previous turn without context
+  action: 'Verify state before re-acting: check whether the prior tool call''s result
+    already accomplished what the user is asking for. Surface what''s already done
+    (''item 6 already removed in tool call at HH:MM:SS'') and confirm before re-doing.
+    If state is uncertain (file exists but content unknown), use `read_file`/`cat`/`ls`
+    first rather than re-executing.'
+  rationale: Bill's "forget 6, unless it is done already" was a direct correction
+    for acting on stale assumptions. Re-doing completed work burns time, pollutes
+    state, and erodes trust in agent self-awareness. The agent has the prior tool
+    result in context — a quick verify is cheap.
+  scope: workflow:state-verification
+  counterexample_conditions: Don't redundantly verify when context clearly says the
+    action is needed (e.g. user explicitly says "do X" with no prior session reference).
+    Verification is for when the prior turn's actions overlap with the current request.
+  observed_count: 1
+  importance: 0.5
+  tags:
+  - workflow, verification, user-preference
+  last_validated: '2026-06-20T19:43:54.714701+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
+- id: L-20260621-162913
+  trigger: When picking a local ollama model for a workload — especially a high-volume,
+    trivial, or batch task (e.g., contextualizer, fact extraction, summarization of
+    short content, formatting helpers, retry/regenerate loops).
+  action: Default to non-thinking dense models for high-volume trivial local workloads.
+    Use thinking models only where reasoning materially adds value. Don't reach for
+    a "thinking" variant just because it's newer or larger. Match the tool to the
+    task.
+  rationale: On 2026-06-21 Bill corrected me after I swapped the contextualizer default
+    from qwen2.5:14b (14B dense) → Qwen3-VL-8B-Thinking. The contextualizer generates
+    ~50-100 token prefixes for every memory-fact write at high volume; thinking tax
+    (500-2000 reasoning tokens per call) is wrong fit even though tokens aren't the
+    bottleneck. Bill also noted local models aren't token-limited in a way that matters
+    — tool fit is the real concern. The 32B-Thinking → 8B-Thinking swap for *fallback
+    analysis* (youtube-content, fallback-llm-video-analysis) still made sense because
+    structured analysis benefits from reasoning; the contextualizer does not.
+  scope: hermes / local-model-selection
+  counterexample_conditions: Use thinking models when the task is structured analysis
+    with reasoning steps (e.g., claims-veracity table, chapter extraction from long
+    transcripts, financial/political synthesis where proper-noun reasoning matters).
+    The youtube-content / fallback-llm-video-analysis skills stay on Qwen3-VL-8B-Thinking
+    for that reason. Don't apply this lesson to those.
+  observed_count: 1
+  importance: 0.5
+  tags:
+  - local-models, ollama, thinking-mode, model-selection, contextualizer
+  last_validated: '2026-06-21T16:29:13.386322+00:00'
+  source_episodes:
+  - 2026-06-21 model-swap session
+  status: active
+  profile_id: default
+- id: L-20260621-223233
+  trigger: editing or reviewing a route handler in hermes-agent/hermes_cli/web_server.py
+    that uses HERMES_HOME
+  action: 'Check whether HERMES_HOME is defined as a local var inside the function
+    (correct) or a sibling function (bug — NameError at runtime). If a handler references
+    the bare name `HERMES_HOME`, search the function for `HERMES_HOME = ` — if missing,
+    add a local definition: `HERMES_HOME = Path(os.environ.get("HERMES_HOME", "C:/Data/Hermes"))`.
+    If not `HERMES_HOME.exists()`-check, fall back to `Path("C:/Data/Hermes")`. Watch
+    out for the shadow-by-local pattern: a local defined in health_deep() (line ~1400)
+    was the silent cause of /api/watchdog/state returning HTTP 500 until 2026-06-21.'
+  rationale: 'Sibling-function locals are not visible across function boundaries in
+    Python. web_server.py grew several endpoint handlers that reuse module-level variable
+    names (HERMES_HOME) but those names were only defined locally in some handlers,
+    not at module scope. Result: NameError → HTTP 500 with no useful body. The dashboard''s
+    "watchdog 500s" silent failure mode was the only visible symptom.'
+  scope: hermes-agent/hermes_cli/web_server.py
+  counterexample_conditions: 'If the function already has `import os` and `HERMES_HOME
+    = Path(os.environ.get("HERMES_HOME", "C:/Data/Hermes"))` at the top of the function
+    body, do NOT add another — duplicate definition is fine but a redundant one. Also:
+    if you''re adding a brand-new handler, define HERMES_HOME locally inside it from
+    the start; don''t assume module-level.'
+  observed_count: 1
+  importance: 0.5
+  tags: []
+  last_validated: '2026-06-21T22:32:33.419697+00:00'
+  source_episodes: []
+  status: active
+  profile_id: default
