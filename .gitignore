@@ -146,3 +146,4 @@ graphify-out/graph.json
 config.yaml.bak.*
 config.yaml.corrupt.*
 MEMORY.md.bak*
+/cache/

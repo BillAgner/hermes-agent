@@ -54,6 +54,17 @@ The format skill specifies the exact rules (bullet length, lead-with-fact, throu
 
 **Override:** if the user explicitly asks for a different format (chapters, thread, blog post, raw transcript), bypass the format skill and use `youtube-content` directly.
 
+### Fallback when `youtube-news-digest` is not installed
+
+`youtube-news-digest` is a soft dependency. If `skill_view` returns "skill not found" at the analyze step, **do not** stop — the format spec is short enough to inline. Apply these rules directly:
+
+- **Header:** `📰 Daily News Digest — <Month DD, YYYY>` (today's date in the digest, *not* the upload date — note the upload date in the analysis so the reader knows the gap).
+- **TL;DR:** exactly 5 bullets. Each bullet leads with a concrete fact (a number, a name, a date, a quote-fragment). No bullet may start with "The host discusses..." or "In this story..." — those are summary, not fact.
+- **Throughline:** one short sentence below the 5 bullets that names the connective tissue across the 5 stories in the host's own framing where possible.
+- **Full Analysis:** one section per TL;DR bullet, in the same order. Each section opens with the load-bearing fact, then adds quotes and detail. **Preserve the host's hedges verbatim** — if the host says "correlation, not causation" or "in their exact words," keep that posture. Closing synthesis section restates the host's wrap-up rather than inventing a new one.
+- **Target length:** 800-1500 words for the analysis body. If the host packed 5 dense stories with quotes, going slightly over is fine; if you're at 2000+, trim the per-section filler.
+- **Source line** is non-negotiable. Always include `https://www.youtube.com/watch?v={videoId}` derived from the RSS `<yt:videoId>`.
+
 ## Delivery
 
 The `youtube-news-digest` format skill (loaded at the analyze step) accepts a `deliver_to` parameter. Pass the configured target through to it:
@@ -63,6 +74,18 @@ The `youtube-news-digest` format skill (loaded at the analyze step) accepts a `d
 - From any other caller: pass through whatever delivery target was configured.
 
 The format skill handles the actual `hermes send` invocation and the platform-configured check. The orchestrator's job is just to forward the parameter.
+
+### Cron auto-DELIVERY override
+
+When this pipeline runs as a scheduled cron job with a `[IMPORTANT: ... DELIVERY: Your final response will be automatically delivered ... do NOT use send_message ...]` preamble, **skip the `hermes send` step entirely**. The runtime is configured to route your final assistant response to the user; calling `hermes send` would double-deliver. The orchestrator's job in that mode is:
+
+1. Compose the digest body (TL;DR + Full Analysis + any job-specific prefix/suffix blocks like COMEX market pulse).
+2. Write the assembled body to `/tmp/digest.txt` (or `C:/Users/<user>/AppData/Local/Temp/digest.txt` on Windows — same path under MSYS).
+3. Return the digest as the final assistant message. The cron runtime handles the rest.
+
+If the preamble says `SILENT`, return exactly `[SILENT]` and nothing else when there is nothing new to report (e.g., a "Repeat:" that the user already has). Do not combine `[SILENT]` with content.
+
+### Manual delivery via `hermes send` CLI
 
 The user may say "use the `send_message` tool" — that tool is **not** registered in most sessions' function sets. The actual mechanism is the Hermes CLI:
 
@@ -99,6 +122,28 @@ If `session_search` shows this video ID was already analyzed (likely because the
 ### Don't use the browser tool for channel discovery
 
 The channel page is heavy HTML, fails to render via the local browser in this environment, and the RSS feed gives the same data in 40KB. Always try the RSS feed first; only escalate to the browser if the RSS feed is missing or malformed.
+
+### `youtube-news-digest` is a soft dependency
+
+The skill's analyze step says "load `youtube-news-digest`." That skill is not always installed in every profile — treat it as a soft dependency. If `skill_view(name="youtube-news-digest")` returns a "not found" error, fall back to the inline format spec under "Default Output Format → Fallback when `youtube-news-digest` is not installed" above. Do not abort the digest.
+
+### `youtube-transcript-api` can fail with `ParseError` even when the video has captions
+
+When the helper script returns `{"error": "no element found: line 1, column 0"}` (or any `xml.etree.ElementTree.ParseError`), the YouTube transcript API is being blocked or the response is malformed — usually IP-binding, rate-limiting, or YouTube's anti-bot layer rejecting the request. The video's captions almost certainly exist. **Do not** conclude "transcripts are disabled" from this error. Fall back to `yt-dlp` (see the recipe in `youtube-content` under "yt-dlp fallback when the API is blocked"). `yt-dlp` reads the page itself and pulls the caption track URL from the embedded `captionTracks` array, which is a different code path.
+
+### The channel RSS feed needs the channel ID, not the handle
+
+The `https://www.youtube.com/feeds/videos.xml?channel_id=...` URL requires a 24-char `UC...` channel ID, not a `@handle`. If you only have the handle (`@SharedSapience`), resolve it with:
+
+```bash
+curl -s -A "Mozilla/5.0" "https://www.youtube.com/@Handle" -L | grep -oE '"externalId":"[A-Za-z0-9_-]+"' | head -1
+```
+
+The `externalId` field in the page's `og:video` / metadata block is the `UC...` ID you need. This avoids needing a web search tool (which may not be configured) and the slow browser.
+
+### Cron DELIVERY overrides the manual `hermes send` step
+
+When the job preamble says "DELIVERY: Your final response will be automatically delivered," do not call `hermes send` and do not write to `/tmp/digest.txt` as a hard requirement — the runtime routes the assistant's final response directly. The orchestrator's only job in that mode is to produce the digest content as the final message. See "Delivery → Cron auto-DELIVERY override" above.
 
 ## Related
 

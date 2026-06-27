@@ -26,14 +26,14 @@ Hermes cron has a **3-minute hard interrupt per run**. A single overnight sessio
 | Research tick | `*/30 1-3 * * *` | 1:00–3:30am | `local` | 3-min focused research slice, appends to state file |
 | Morning report | `0 6 * * *` | 6:00am | `telegram` | Reads state file, synthesizes, delivers to user |
 
-**State handoff:** `C:\Data\Hermes\cron\output\nightly-research\YYYY-MM-DD.md`
+**State handoff:** `C:\Data\Hermes_0.17.0\cron\output\nightly-agent-research\YYYY-MM-DD.md`
 Each tick appends; morning job reads the file matching today's date. State persists across ticks; auto-stops when 2 idle ticks in a row add `## RESEARCH COMPLETE`.
 
 **Chaining:** morning job has `context_from: ["<research_job_id>"]` so it receives the last tick's summary as context. The state file is the durable source of truth.
 
 ## Setup steps
 
-1. Create output dir: `mkdir -p $HERMES_HOME/cron/output/nightly-research`
+1. Create output dir: `mkdir -p $HERMES_HOME/cron/output/nightly-agent-research`
 2. Create research job via `cronjob create`:
    - schedule: `*/30 1-3 * * *`
    - enabled_toolsets: `web, search, terminal, file, session_search, skills`
@@ -55,6 +55,13 @@ See `references/research-tick-prompt.md` in this skill. The prompt enforces:
 - Pick ONE lane per tick from a menu (arXiv, GitHub trending, AI labs, HN, Reddit, topical deep-dives)
 - 1-3 NEW findings per tick, each with: title, URL, description, "why for Hermes" (ties to actual Hermes architecture), Status (New/Repeat/Already-available), Action (install/configure/monitor-only/no-action)
 - 2-idle-tick stop condition writes `## RESEARCH COMPLETE` to the state file
+- No installs, no config changes, research only
+
+For arXiv parsing issues, see `references/arxiv-parsing-fallbacks.md` for fallback patterns when XML parsing fails.
+
+For fallback research patterns when web tools are unavailable, see `references/arxiv-fallback-patterns.md`.
+
+For proven research patterns and time management strategies, see `references/successful-research-patterns.md`.
 - No installs, no config changes, research only
 
 ## Morning report prompt template
@@ -92,7 +99,7 @@ If `hermes send --list` reports "No messaging platforms configured", Telegram is
 hermes cron list
 
 # Confirm output dir exists and is writable
-ls -la $HERMES_HOME/cron/output/nightly-research/
+ls -la $HERMES_HOME/cron/output/nightly-agent-research/
 
 # Confirm context_from is persisted (the list view doesn't show it)
 grep -A 2 "morning_job_id" $HERMES_HOME/cron/jobs.json
@@ -107,13 +114,25 @@ hermes cron run <research_job_id>
 
 **Don't have the research tick do installs or write to other files.** It's research only. The morning job proposes installs for the user to approve.
 
-**Don't `hermes skills install` from the research tick.** Burns tokens on install setup, may not be reversible, and the user might not want it. The morning report proposes; the user decides.
+**State file path variations.** The template shows `C:\Data\Hermes\cron\output\nightly-agent-research\` but actual Hermes installs may use `C:\Data\Hermes_0.17.0\cron\output\nightly-agent-research\` or other versioned directories. Update the research tick prompt with the correct path for your installation.
+
+**Missing web extract providers.** If `web_extract` fails with "No web extract provider configured", fall back to direct arXiv API XML parsing only. The conversation shows successful research patterns using only arxiv and GitHub API calls.
+
+**Python command cross-platform issues.** On Windows MSYS/Git Bash, use `python` not `python3` in arXiv parsing commands. The arxiv skill examples should be verified to work on the current platform.
+
+**Don't `hermes skills install` from the research tick.** Burns tokens on install setup, may not be reversible, and the user might not want it. The morning job proposes; the user decides.
 
 **Don't fabricate findings to fill out a thin night.** "No signal" is a valid report. Honest > padded.
 
 **Don't read full arxiv PDFs.** Abstracts only — 5x faster, 10x cheaper tokens.
 
 **Don't go down rabbit holes.** The prompt caps at 10-15 papers / 20 web pages per tick. If you're tempted to read more, stop and write what you have.
+
+**arXiv API XML parsing can fail.** If curl + python XML parsing errors out, fall back to direct curl and grep/sed for basic extraction, or skip arXiv for that tick. Don't burn time debugging the XML parser — move to another research lane.
+
+**Missing tools should become findings.** When `which blogwatcher-cli` or `web_search` fails, capture it as a finding with Status: not-installed and Action: install. Don't try to install tools during the research tick — the morning job will propose it to the user.
+
+**GitHub API is reliable for recent repos.** When web_search is unavailable, GitHub API searches for repositories created after specific dates work well and don't require authentication. Pattern: `curl -s "https://api.github.com/search/repositories?q=keywords+created:>YYYY-MM-DD&sort=stars&order=desc"`
 
 **Telegram 4096-char limit + dupe bug.** Always split into chunks <4000 chars. The gateway sends anything >4096 twice.
 

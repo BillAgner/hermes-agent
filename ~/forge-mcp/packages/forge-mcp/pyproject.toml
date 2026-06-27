@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "forge-mcp"
+version = "0.1.0"
+description = "MCP server for the forge guardrails library. Save workflows, run them against local LLMs (Ollama / llama-server / llamafile / vLLM), and capture tool-call traces. Designed for offloading repeated structured tasks from frontier models to local inference."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [
+    { name = "Bill Agner", email = "noreply@hermes.local" },
+]
+keywords = [
+    "mcp", "model-context-protocol",
+    "forge", "forge-guardrails",
+    "ollama", "llama-cpp", "vllm",
+    "tool-calling", "local-llm", "agents",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+dependencies = [
+    "mcp[cli]>=1.0",
+    "pydantic>=2.0",
+    "forge-guardrails>=0.7.6",
+]
+
+[project.scripts]
+forge-mcp = "forge_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/forge_mcp"]

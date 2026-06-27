@@ -1,0 +1,142 @@
+# Triage Case Study — 34 Pending Records (2026-06-26)
+
+A real sweep of `<HERMES_HOME>/pending/skills/` on this install. Documents the
+actual error messages and resolution for each record, so future sessions can
+recognize the same patterns without re-discovering them.
+
+## Summary
+
+| Bucket | Count |
+|---|---|
+| Applied (guard OFF) | 27 |
+| Applied (guard ON) | 1 |
+| Security-blocked, would apply with guard OFF | 24 |
+| Other-error (real issues, can't fix mechanically) | 6 |
+| **Total** | **34** → **33 after sweep** (one new record generated mid-sweep) |
+
+## Why the security scan was blocking 24 records
+
+`skills.guard_agent_created: true` was set in `config.yaml` (default is `false`).
+The scanner (`tools/skills_guard.scan_skill`) over-eagerly flagged skills whose
+SKILL.md text mentions prompt-injection hygiene. Real examples from this sweep:
+
+- `daily-news-digest` — "CRITICAL exfilt" 2 findings — its skill body discusses
+  sanitizing external news content for exfiltration risks
+- `model-router` — "CRITICAL exfilt" 11-12 findings — its body talks about
+  routing requests through different providers to avoid sending sensitive data
+  to the wrong one
+- `arxiv` — "CRITICAL supply_chain" 9-10 findings — its body discusses the risk
+  of pulling untrusted Python from random GitHub repos
+- `hermes-agent` — "CRITICAL exfilt" 33 findings — its body covers Hermes
+  privacy and credential management in detail
+
+The scanner can't tell defensive teaching patterns from malicious payloads.
+None of these skills are dangerous in practice; the matches are all in
+**legitimate instructional content**.
+
+Resolution: toggle `skills.guard_agent_created` off → apply → toggle back on.
+
+## The 6 real issues
+
+These are records that won't apply no matter what guard state you're in. They
+need human triage.
+
+### 1f42a34f — stale anchor (nightly-research-report)
+
+```
+patch nightly-research-report
+Found 3 matches for old_string. Provide more context to make it unique, or use replace_all=True.
+```
+
+`old_string` was 1459 chars starting with `## Pitfalls`. The on-disk file had
+been restructured by three other `write_file` records that applied earlier in
+the same sweep. Specifically: the file gained three pitfalls between
+"**Don't have the research tick do installs...**" and
+"**Don't `hermes skills install` from the research tick.**" that the
+`old_string` expected to be consecutive.
+
+**Diagnosis:** the patch was staged before the writes; the writes applied first
+and broke the patch's anchor. The new content the patch wanted to add was
+already substantively present after the writes.
+
+**Action:** reject (`wa.discard_pending`). The content was effectively applied.
+
+### 231444bf — empty skill name
+
+```
+patch ''
+Skill '' not found in active profile 'default'. Use skills_list() to see available skills.
+```
+
+`payload.name = ""`, no `file_path`. The `old_string` content references qmd
+paths and commands (`bun run qmd query`, `qmd-mcp.cmd`, etc.). Looks like it
+was meant for the `qmd` skill but the name got lost in staging.
+
+**Action:** reject. Unrecoverable.
+
+### 62f2ec01 — empty skill name (qmd-related)
+
+```
+patch ''
+Skill '' not found in active profile 'default'.
+```
+
+Same shape as 231444bf — `name=""`, no `file_path`, content about qmd
+bundled path and Ollama launch. Possibly a duplicate-or-near-duplicate of
+231444bf with different surrounding context.
+
+**Action:** reject. Unrecoverable.
+
+### 74967c39 — no-op patch (hermes-agent)
+
+```
+patch hermes-agent
+old_string and new_string are identical
+```
+
+3940-char `old_string` == 3940-char `new_string`. Both sides verbatim
+identical — likely a self-test control or a diff engine that failed to compute.
+
+**Action:** reject. Safe no-op.
+
+### 9bfa64b4 — smoke-test placeholder (nightly-research-report)
+
+```
+patch nightly-research-report
+Could not find a match for old_string in the file
+```
+
+`old_string` (42 chars): `**TEST PLACEHOLDER - APPROVE ALL CHANGES**`
+`new_string` (12 chars): `**APPROVED**`
+
+This is a self-test artifact from `background_review` — a placeholder text
+inserted to test the write-approval pipeline itself. The placeholder was
+replaced by other writes that applied earlier in the same sweep.
+
+**Action:** reject. Smoke-test served its purpose.
+
+### b9827719 — duplicate create (hermes-cron)
+
+```
+create hermes-cron
+A skill named 'hermes-cron' already exists at C:\Data\Hermes_0.17.0\skills\software-development\hermes-cron.
+```
+
+The pending record wanted to `create` a skill named `hermes-cron` with a full
+SKILL.md body, but `skills/software-development/hermes-cron/SKILL.md` already
+exists (created via foreground path, not via this pending record).
+
+**Action:** verify the on-disk skill matches what the pending payload would
+have produced. If yes, reject. If no, switch action from `create` to `edit`
+and re-queue.
+
+## Race condition observed
+
+During the 34-record sweep, a **35th record appeared mid-run** — `2a7be906`,
+the meta-skill `pending-skill-write-debugging` itself, generated by
+`background_review` observing the workflow. The triage script missed it on
+the first pass; I had to run it again (or apply manually) to catch it.
+
+**Lesson:** always re-list `<HERMES_HOME>/pending/skills/` immediately before
+applying, and accept that you'll discover newly-staged records between passes.
+For batch triage, run the script twice.

@@ -6,7 +6,7 @@ import { Select, SelectOption } from "@nous-research/ui/ui/components/select";
 import { Spinner } from "@nous-research/ui/ui/components/spinner";
 import { H2 } from "@nous-research/ui/ui/components/typography/h2";
 import { api } from "@/lib/api";
-import type { CronJob, CronDeliveryTarget, ProfileInfo, SkillInfo, CronRunOutput, CronRunSession } from "@/lib/api";
+import type { CronJob, CronDeliveryTarget, ProfileInfo, SkillInfo, CronRunSession, SessionMessage } from "@/lib/api";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   DEFAULT_SCHEDULE_STATE,
@@ -283,7 +283,7 @@ function CronRunOutputDialog({
   sessionId: string | null;
   onClose: () => void;
 }) {
-  const [output, setOutput] = useState<CronRunOutput | null>(null);
+  const [messages, setMessages] = useState<SessionMessage[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -291,10 +291,10 @@ function CronRunOutputDialog({
     if (!open || !sessionId) return;
     setLoading(true);
     setError(null);
-    setOutput(null);
+    setMessages(null);
     api
-      .getCronRunOutput(sessionId)
-      .then((res) => setOutput(res))
+      .getSessionMessages(sessionId)
+      .then((res) => setMessages(res.messages || []))
       .catch((e: unknown) =>
         setError(e instanceof Error ? e.message : String(e)),
       )
@@ -309,21 +309,33 @@ function CronRunOutputDialog({
             {sessionId || "run output"}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {output
-              ? `${output.matched_file}  ·  ${(output.size / 1024).toFixed(1)} KB`
+            {messages
+              ? `${messages.length} message${messages.length === 1 ? "" : "s"}`
               : "loading..."}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-4 py-3 border-t border-border/40 min-h-[200px]">
+        <div className="flex-1 overflow-y-auto px-4 py-3 border-t border-border/40 min-h-[200px] space-y-3">
           {loading && (
-            <p className="text-sm text-muted-foreground">loading report...</p>
+            <p className="text-sm text-muted-foreground">loading transcript...</p>
           )}
           {error && (
             <p className="text-sm text-destructive">failed: {error}</p>
           )}
-          {output && (
-            <Markdown content={output.content} />
+          {messages && messages.length === 0 && !loading && !error && (
+            <p className="text-sm text-muted-foreground">no messages recorded</p>
           )}
+          {messages && messages.map((m, i) => {
+            const body = typeof m.content === "string" ? m.content : "";
+            const role = m.role || "unknown";
+            return (
+              <div key={i} className="space-y-1">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                  {role}
+                </p>
+                <Markdown content={body} />
+              </div>
+            );
+          })}
         </div>
         <DialogFooter>
           <DialogClose asChild>

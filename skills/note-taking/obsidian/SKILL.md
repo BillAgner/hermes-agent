@@ -1,6 +1,6 @@
 ---
 name: obsidian
-description: Read, search, create, and edit notes in the Obsidian vault.
+description: "Read, search, create, and edit notes in the Obsidian vault. Use when working with markdown notes in an Obsidian vault (PARA-style: Daily/, Projects/, Inbox/, Templates/, References/). Composes with the qmd skill for hybrid BM25+vector search via mcp__qmd__* tools."
 platforms: [linux, macos, windows]
 ---
 
@@ -60,11 +60,40 @@ Use `patch` for focused note changes when the current content gives you stable c
 
 Obsidian links notes with `[[Note Name]]` syntax. When creating notes, use these to link related content.
 
+## Searching the vault (QMD composition)
+
+The vault is indexed as the `obsidian` collection by QMD. Use the `mcp__qmd__*` tools for hybrid search instead of re-implementing search here. The QMD MCP server actually exposes **4 tools**, not 6 — the `query` tool subsumes the search modes via a `type` field:
+
+| MCP tool | Backend | Use when |
+|---|---|---|
+| `mcp__qmd__query` (with `type: "lex"`) | BM25 (FTS5) | Exact phrase, code, error string |
+| `mcp__qmd__query` (with `type: "vec"`) | vector (bge-m3 via ollama) | Paraphrase / concept |
+| `mcp__qmd__query` (with `type: "hyde"`) | hypothetical + vector | Complex / nuanced topics |
+| `mcp__qmd__query` (mix of lex + vec + hyde) | hybrid + rerank | Best-effort recall for agent context |
+| `mcp__qmd__get` | direct | Have a docid/path from prior search |
+| `mcp__qmd__multi_get` | direct | Bulk fetch by glob pattern |
+| `mcp__qmd__status` | meta | Index health, collection counts |
+
+Example `query` call payload:
+```json
+{
+  "searches": [
+    {"type": "lex", "query": "connection pool"},
+    {"type": "vec", "query": "why do database connections time out under load"}
+  ],
+  "limit": 5,
+  "minScore": 0.3
+}
+```
+
+For ad-hoc grep/filename lookups during note editing, `search_files` is still fine.
+
 ## Current state on this box (verified 2026-06-25)
 
-- `OBSIDIAN_VAULT_PATH` env var is **unset** and `~/Documents/Obsidian Vault/` does **not exist**.
-- The skill is functional but ungrounded — there's no vault to read or write.
-- If a session needs the vault and it's missing, bootstrap one (see below) before doing real work.
+- `OBSIDIAN_VAULT_PATH` env var **is set** (added to `$HERMES_HOME/.env`) and the vault exists at `C:\Users\bobup\Documents\Obsidian Vault\`.
+- Layout: `Daily/`, `Projects/`, `Inbox/`, `Templates/` (with `daily.md` + `project.md` templates), `References/`, plus `README.md` and `.obsidian/app.json` + `appearance.json`.
+- The vault is indexed as the `obsidian` collection in QMD (95 files total across `skills` + `obsidian` collections).
+- If a future session finds `OBSIDIAN_VAULT_PATH` unset or the vault missing, re-run `scripts\install_qmd.ps1` (idempotent — vault step is `[SKIP]` if already present).
 
 ## Vault bootstrap (when `OBSIDIAN_VAULT_PATH` is unset)
 
@@ -91,46 +120,14 @@ if (-not (Select-String -Path $envFile -Pattern '^OBSIDIAN_VAULT_PATH=' -Quiet))
 }
 ```
 
-## Pitfalls
+The `scripts\install_qmd.ps1` script does all of this automatically (Step 6 creates the vault at `C:\Users\bobup\Documents\Obsidian Vault\`, Step 7 writes the env var, Step 11 junctions the qmd skill in). Re-running it is safe — each step is `[OK]` or `[SKIP]` on subsequent runs.
 
-- **No vault, no skill.** Don't assume the skill works without verifying `OBSIDIAN_VAULT_PATH` resolves to an existing directory. Check first; if missing, offer to bootstrap.
-- **Paths with spaces.** Vault paths commonly contain spaces (`Documents\Obsidian Vault\`). Always quote them in shell commands and pass absolute resolved paths to file tools — never pass `$OBSIDIAN_VAULT_PATH` raw.
-- **Default location assumption.** New users often expect `~/Documents/Obsidian Vault` to exist. Obsidian can open any folder as a vault, so non-default locations work — but ask the user before creating one outside the conventional path.
-
-## Searching the vault (QMD composition)
-
-The vault is indexed as the `obsidian` collection by QMD. Use the `qmd` skill (`mcp__qmd__*` tools) for hybrid search instead of re-implementing search here:
-
-- Exact phrase / code / error string -> `qmd_search` (BM25)
-- Paraphrase / concept -> `qmd_vector_search`
-- Best-effort recall across KB -> `qmd_deep_search`
-- Have a docid from a prior search -> `qmd_get`
-- Bulk fetch by glob -> `qmd_multi_get`
-
-For ad-hoc grep/filename lookups during note editing, `search_files` is still fine.
-
-## Vault bootstrap
-
-If `OBSIDIAN_VAULT_PATH` is unset, the bootstrap target is the standard Obsidian location: `C:\Users\bobup\Documents\Obsidian Vault\`.
-
-The `scripts\install_qmd.ps1` script creates this vault with a PARA layout:
-
-- `Daily/` - daily notes
-- `Projects/` - active project notes
-- `Inbox/` - quick capture
-- `Templates/` - `daily.md`, `project.md`
-- `References/` - reference material
-
-A `.obsidian/` config dir with `app.json` + `appearance.json` is also created. Community plugins (Dataview, Templater, Recent Files, Markdownlint) can be enabled from the Obsidian GUI after the vault is opened.
-
-## Plugins worth enabling
+## Plugins worth enabling (GUI-side, not required by this skill)
 
 - **Dataview** - query notes like a DB (e.g. list all projects with status=active)
 - **Templater** - auto-fill `Daily/*.md` with date, weather, todos
 - **Recent Files** - quick navigation
 - **Markdownlint** - keeps notes consistent
-
-These are GUI-side; this skill doesn't depend on them.
 
 ## Frontmatter conventions
 
@@ -145,3 +142,11 @@ status: active
 ```
 
 Keep frontmatter consistent so QMD's metadata-based ranking and future Dataview queries work well. QMD stores title + first heading as metadata; tags help filter.
+
+## Pitfalls
+
+- **No vault, no skill.** If a future session finds `OBSIDIAN_VAULT_PATH` unset or the vault missing, re-run `scripts\install_qmd.ps1` (Step 6 bootstrap is idempotent). Don't assume the skill works without verifying the vault exists.
+- **Paths with spaces.** Vault paths commonly contain spaces (`Documents\Obsidian Vault\`). Always quote them in shell commands and pass absolute resolved paths to file tools — never pass `$OBSIDIAN_VAULT_PATH` raw.
+- **Default location assumption.** New users often expect `~/Documents/Obsidian Vault` to exist. Obsidian can open any folder as a vault, so non-default locations work — but ask the user before creating one outside the conventional path.
+- **Wrong MCP tool names.** The QMD README lists 6 tools (`qmd_search`, `qmd_vector_search`, `qmd_deep_search`, `qmd_get`, `qmd_multi_get`, `qmd_status`) but the MCP server actually exposes only **4**: `query`, `get`, `multi_get`, `status`. The search modes are folded into `query` via the `type` field. See the "Searching the vault" section above for the actual tool surface.
+- **`hermes mcp restart` doesn't exist.** Use `hermes mcp test qmd` to force a reconnect of just the qmd server. New `mcp_servers` config entries are picked up LIVE without any restart step.

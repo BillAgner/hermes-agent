@@ -1,9 +1,9 @@
 {
   "agent:main:telegram:dm:8568067385": {
     "session_key": "agent:main:telegram:dm:8568067385",
-    "session_id": "20260625_095625_3bbfe4b3",
-    "created_at": "2026-06-25T09:56:25.683720",
-    "updated_at": "2026-06-25T13:36:01.491888",
+    "session_id": "20260626_181641_c74e93fc",
+    "created_at": "2026-06-26T18:16:41.176426",
+    "updated_at": "2026-06-26T18:39:05.794075",
     "display_name": "William Agner",
     "platform": "telegram",
     "chat_type": "dm",
@@ -12,7 +12,7 @@
     "cache_read_tokens": 0,
     "cache_write_tokens": 0,
     "total_tokens": 0,
-    "last_prompt_tokens": 258134,
+    "last_prompt_tokens": 100272,
     "estimated_cost_usd": 0.0,
     "cost_status": "unknown",
     "expiry_finalized": false,

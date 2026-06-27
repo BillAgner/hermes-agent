@@ -523,19 +523,6 @@ export const api = {
     fetchJSON<{ runs: CronRunSession[]; limit: number }>(
       `/api/cron/jobs/${encodeURIComponent(jobId)}/runs?profile=${encodeURIComponent(profile)}&limit=${encodeURIComponent(limit)}`,
     ),
-  getCronRunOutput: (sessionId: string, profile = "default") =>
-    fetchJSON<{
-      session_id: string;
-      job_id: string;
-      profile: string;
-      path: string;
-      matched_file: string;
-      content: string;
-      mtime: number;
-      size: number;
-    }>(
-      `/api/cron/runs/${encodeURIComponent(sessionId)}/output?profile=${encodeURIComponent(profile)}`,
-    ),
   getCronDeliveryTargets: () =>
     fetchJSON<{ targets: CronDeliveryTarget[] }>("/api/cron/delivery-targets"),
   createCronJob: (job: { prompt: string; schedule: string; name?: string; deliver?: string; skills?: string[] }, profile = "default") =>
@@ -1944,19 +1931,6 @@ export interface CronRunSession {
   archived?: boolean;
   is_active?: boolean;
   profile?: string | null;
-}
-
-// Response from GET /api/cron/runs/<session_id>/output — the markdown
-// report the cron scheduler wrote to <HERMES_HOME>/cron/output/<job_id>/.
-export interface CronRunOutput {
-  session_id: string;
-  job_id: string;
-  profile: string;
-  path: string;
-  matched_file: string;
-  content: string;
-  mtime: number;
-  size: number;
 }
 
 export interface CronDeliveryTarget {

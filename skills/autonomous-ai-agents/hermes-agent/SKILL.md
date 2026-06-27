@@ -829,6 +829,156 @@ and logs — avoids shell-escaping backslashes in bash.
 - **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.
 - **Code changes:** Restart the CLI or gateway process
 
+### Restart-Aware Development (SPA + dashboard)
+
+The dashboard server (`hermes_cli/web_server.py`) is a long-lived uvicorn
+process bound to a port (default 9119). It serves **two different
+surfaces** with **two different reload semantics**:
+
+| Surface | Where it lives | Reloads when... |
+|---|---|---|
+| **SPA bundle** (`hermes_cli/web_dist/index*.js`) | Static files on disk | Browser refresh picks up the new bundle automatically — no process restart |
+| **Python API routes** (`hermes_cli/web_server.py`) | In-memory of the running uvicorn process | Only when the dashboard process restarts |
+
+This split is the source of the most common "my changes aren't live" surprise.
+**Two surfaces, two reload triggers, and the user only sees one (the page).**
+
+#### Pre-flight checklist before adding a new endpoint
+
+When the user reports a new feature is missing, broken, or returning 404 from
+the dashboard, walk this list **before** editing `web_server.py`:
+
+1. **Hit the endpoint directly with `curl`** using the dashboard's session
+   token (the same `_SESSION_TOKEN` injected into the SPA HTML — grab it
+   from `curl -s http://127.0.0.1:9119/ | grep __HERMES_SESSION_TOKEN__`).
+   - If `curl` returns 200 → the endpoint is live. The problem is SPA-side
+     (stale bundle, wrong URL, missing profile).
+   - If `curl` returns 404 → the endpoint isn't registered in the running
+     process. The dashboard needs a restart.
+2. **Search for existing endpoints that already answer the question.** This
+   is the single most-skipped step. Before adding `/api/cron/runs/<id>/output`,
+   check whether `/api/sessions/<id>/messages`,
+   `/api/files/read?path=…`, or `/api/fs/read-text?path=…` already returns
+   the data the SPA needs. The dashboard has a wide API surface — most
+   "I need a new endpoint" requests are satisfied by an existing one.
+3. **If a new endpoint is genuinely needed**, decide hot-path vs cold-path:
+   - **Hot path** (the SPA calls it on every user click) → either accept
+     the restart cost, or pivot to an existing endpoint.
+   - **Cold path** (CLI tools, scripts, external integrations) → add the
+     endpoint, document the restart requirement, ship the SPA without
+     calling it.
+
+The **default posture** for any SPA-facing change is "ship via existing
+endpoints; never require a dashboard restart for a UX improvement." A
+dashboard restart interrupts Bill at his desk. The watchdog auto-recovers
+services, so a restart also tends to chain into gateway reloads. Build for
+the constraint, don't fight it.
+
+#### How to verify a SPA bundle change is live without restarting
+
+```bash
+# 1. Build the SPA
+cd web && npm run build
+
+# 2. Note the new bundle hash from the build output
+# 3. Confirm the dashboard is serving the new hash
+curl -s http://127.0.0.1:9119/ | grep -oE 'index-[A-Za-z0-9]+\.js'
+
+# If the hash matches, the user just needs a hard-refresh (Ctrl+Shift+R
+# or Cmd+Shift+R) to pick up the new bundle.
+```
+
+If the dashboard serves the OLD hash, something is regenerating `web_dist/`
+from a cached source — investigate before assuming a restart will fix it.
+
+#### Windows-specific: how to find the dashboard PID
+
+```bash
+netstat -ano | grep ':9119' | head -1     # get PID from the LISTENING line
+powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"ProcessId=<PID>\" | Select-Object -ExpandProperty CommandLine"
+```
+
+The dashboard is typically launched via `scripts/dashboard_launcher.py`,
+which itself runs `hermes_cli.main dashboard --skip-build --no-open`. If you
+need to restart it without losing the user's tabs, prefer `hermes dashboard
+restart` (the gateway command) over killing the PID directly — it walks the
+established stop/grace/kill path.
+
+### Restart-Aware Development (SPA + dashboard)
+
+The dashboard server (`hermes_cli/web_server.py`) is a long-lived uvicorn
+process bound to a port (default 9119). It serves **two different
+surfaces** with **two different reload semantics**:
+
+| Surface | Where it lives | Reloads when... |
+|---|---|---|
+| **SPA bundle** (`hermes_cli/web_dist/index*.js`) | Static files on disk | Browser refresh picks up the new bundle automatically — no process restart |
+| **Python API routes** (`hermes_cli/web_server.py`) | In-memory of the running uvicorn process | Only when the dashboard process restarts |
+
+This split is the source of the most common "my changes aren't live" surprise.
+**Two surfaces, two reload triggers, and the user only sees one (the page).**
+
+#### Pre-flight checklist before adding a new endpoint
+
+When the user reports a new feature is missing, broken, or returning 404 from
+the dashboard, walk this list **before** editing `web_server.py`:
+
+1. **Hit the endpoint directly with `curl`** using the dashboard's session
+   token (the same `_SESSION_TOKEN` injected into the SPA HTML — grab it
+   from `curl -s http://127.0.0.1:9119/ | grep __HERMES_SESSION_TOKEN__`).
+   - If `curl` returns 200 → the endpoint is live. The problem is SPA-side
+     (stale bundle, wrong URL, missing profile).
+   - If `curl` returns 404 → the endpoint isn't registered in the running
+     process. The dashboard needs a restart.
+2. **Search for existing endpoints that already answer the question.** This
+   is the single most-skipped step. Before adding `/api/cron/runs/<id>/output`,
+   check whether `/api/sessions/<id>/messages`,
+   `/api/files/read?path=…`, or `/api/fs/read-text?path=…` already returns
+   the data the SPA needs. The dashboard has a wide API surface — most
+   "I need a new endpoint" requests are satisfied by an existing one.
+3. **If a new endpoint is genuinely needed**, decide hot-path vs cold-path:
+   - **Hot path** (the SPA calls it on every user click) → either accept
+     the restart cost, or pivot to an existing endpoint.
+   - **Cold path** (CLI tools, scripts, external integrations) → add the
+     endpoint, document the restart requirement, ship the SPA without
+     calling it.
+
+The **default posture** for any SPA-facing change is "ship via existing
+endpoints; never require a dashboard restart for a UX improvement." A
+dashboard restart interrupts Bill at his desk. The watchdog auto-recovers
+services, so a restart also tends to chain into gateway reloads. Build for
+the constraint, don't fight it.
+
+#### How to verify a SPA bundle change is live without restarting
+
+```bash
+# 1. Build the SPA
+cd web && npm run build
+
+# 2. Note the new bundle hash from the build output
+# 3. Confirm the dashboard is serving the new hash
+curl -s http://127.0.0.1:9119/ | grep -oE 'index-[A-Za-z0-9]+\.js'
+
+# If the hash matches, the user just needs a hard-refresh (Ctrl+Shift+R
+# or Cmd+Shift+R) to pick up the new bundle.
+```
+
+If the dashboard serves the OLD hash, something is regenerating `web_dist/`
+from a cached source — investigate before assuming a restart will fix it.
+
+#### Windows-specific: how to find the dashboard PID
+
+```bash
+netstat -ano | grep ':9119' | head -1     # get PID from the LISTENING line
+powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"ProcessId=<PID>\" | Select-Object -ExpandProperty CommandLine"
+```
+
+The dashboard is typically launched via `scripts/dashboard_launcher.py`,
+which itself runs `hermes_cli.main dashboard --skip-build --no-open`. If you
+need to restart it without losing the user's tabs, prefer `hermes dashboard
+restart` (the gateway command) over killing the PID directly — it walks the
+established stop/grace/kill path.
+
 ### Skills not showing
 1. `hermes skills list` — verify installed
 2. `hermes skills config` — check platform enablement

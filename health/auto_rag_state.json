@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "runs": [
+    {
+      "started_at": "2026-06-26T09:00:23.262077+00:00",
+      "projects_scanned": 0,
+      "notebooks_created": 0,
+      "evidence_mirrored": 0,
+      "evidence_skipped_already": 0,
+      "evidence_skipped_no_url": 0,
+      "errors": []
+    }
+  ],
+  "mirrored": {}
+}

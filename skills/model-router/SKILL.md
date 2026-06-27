@@ -124,6 +124,46 @@ When the user invokes `/routing`, the agent should:
 3. For `/routing promote <id>`, confirm with the user before running
    `apply` (or run `apply` automatically — see the user's preference).
 
+## Pitfall — "presence flag" is not "engagement"
+
+When the user says "rewire X to use the local LLM", they almost always
+mean **the model should do work**, not **the model should be present**.
+A swap that only changes a presence check (e.g. `GEMINI_API_KEY` →
+`ollama has qwen2.5:14b in /api/tags`) will not engage the model and
+the user will notice.
+
+Before declaring "done" on any cloud-to-local rewire, classify the work
+into one of three modes and implement the right one:
+
+| Mode | When | What it costs | What it proves |
+|------|------|---------------|----------------|
+| **Presence gate** | A separate process does the actual work; the script just needs to know the LLM is available | one HTTP GET to `/api/tags` | LLM is loaded |
+| **Warmup ping** | The LLM should be hot before downstream work starts | one tiny `/api/generate` with 1–8 output tokens | LLM is loaded AND responsive AND produces output |
+| **Active invocation** | The script itself is supposed to use the LLM for the task at hand | real prompt + real tokens | LLM does the work |
+
+The original `refresh_graphify.py` was a presence gate (it only touched
+a marker file; the actual graphify work happened elsewhere). The user's
+"rewire to use qwen2.5:14b" read as a request for either a warmup ping
+or active invocation — not another presence gate. When a user says
+"use the local LLM" without qualifying, default to **at least warmup**,
+and ask if you can't tell which mode fits.
+
+Three concrete signs you have drifted into presence-gate mode by accident:
+
+1. The new script still has the same `if not X: return 0` shape as the
+   old one. If the only thing that changed is the gate, you are doing a
+   presence check.
+2. The log line never mentions token counts or response content.
+3. The script completes in tens of milliseconds. Any real LLM call
+   (even a 1-token warmup) takes hundreds of ms minimum.
+
+If any of those is true, escalate the rewire — at minimum, do a
+warmup ping against `/api/generate` with a 1-token `prompt: "ping"`,
+and log the response so the model is provably engaged.
+
+For the full step-by-step recipe (env vars, prompt shape, what to log),
+see `references/rewire-script-to-ollama.md`.
+
 ## Tool install: check ollama before letting the tool download its own GGUF
 
 When evaluating a new tool that needs an embedding, reranker, or small-LLM model, **check `ollama list` first**. If ollama already has a model that fits the role, configure the tool to call ollama's HTTP API instead of letting it download its own GGUF (usually 0.5–2 GB).
@@ -139,6 +179,67 @@ How to apply:
 - If no ollama model fits, fall back to the tool's bundled GGUF and **add the model to the ollama pull list** as a follow-up so it joins the central inventory.
 
 This pattern was identified during QMD (Query Markup Documents) planning — QMD ships its own node-llama-cpp trio, but ollama already had `bge-m3` + `bge-reranker-v2-m3` + `qwen3:8b` on disk.
+
+## Rewire an existing cloud-gated script to gate on local Ollama
+
+Same anti-duplication principle as the section above, applied to a script that **already exists** rather than one being installed. Trigger when you find any of:
+
+- A cron/maintenance script gated on a presence flag (`if not os.environ.get("GEMINI_API_KEY"): noop`) that never actually invokes the cloud service — the env var is a stand-in for "the cloud client is configured."
+- A script gated on a cloud cred that's about to be deprecated, removed, or replaced.
+- A new request to "make this script use the local LLM" where the user knows the local model can do the work.
+
+The recipe is a 1:1 swap: replace the env-var presence check with a real Ollama health probe.
+
+**Recipe (Python, stdlib only):**
+
+```python
+import json, os, urllib.request, urllib.error
+
+OLLAMA_URL = os.environ.get("GRAPHIFY_OLLAMA", "http://localhost:11434")
+MODEL      = os.environ.get("GRAPHIFY_MODEL", "qwen2.5:14b")
+TIMEOUT    = float(os.environ.get("GRAPHIFY_TIMEOUT", "3"))
+
+def ollama_has_model(url=OLLAMA_URL, model=MODEL, timeout=TIMEOUT) -> tuple[bool, str]:
+    try:
+        with urllib.request.urlopen(url.rstrip("/") + "/api/tags", timeout=timeout) as r:
+            names = [m.get("name","") for m in json.loads(r.read()).get("models", [])]
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        return False, f"ollama unreachable at {url} ({e.__class__.__name__})"
+    # Ollama reports the same model under multiple tag conventions —
+    # exact match on full name OR prefix-match on `name:` covers both
+    # `qwen2.5:14b` and `hf.co/.../qwen2.5:14b:Q4_K_M`.
+    prefix = model.split(":", 1)[0]
+    present = any(n == model or n.startswith(model + ":") for n in names)
+    if not present:
+        return False, f"model {model!r} not in /api/tags (have: {sorted(set(names))})"
+    return True, f"ollama at {url} has {model}"
+
+# In your main():
+ok, detail = ollama_has_model()
+if not ok:
+    log(f"local LLM unavailable; skipping — {detail}")
+    return 0  # noop is a feature, not a failure
+# else: do the work
+```
+
+**Pitfalls:**
+
+1. **Ollama tag normalization.** `ollama list` shows models like `qwen2.5:14b` AND `hf.co/unsloth/Qwen2.5-14B-Instruct-GGUF:Q4_K_M` for the same physical file. Naive `name == model` matching misses the digest-suffixed variants. The two-tier check (`name == model OR name.startswith(model + ":")`) handles both.
+2. **Cron prompts must be updated alongside the script.** If the cron is `no_agent: false` (agent-driven), the prompt is re-read on each run and documents the gating logic. If you only edit the script, the next agent run reports stale gating (e.g. "GEMINI_API_KEY not set") and the user thinks the rewire didn't take. Always edit both `cronjob.update(prompt=...)` and the script.
+3. **Exit-0 on noop.** A "model not loaded" state is not an error — the script should log + exit 0 so downstream alerting doesn't fire. Reserve non-zero exits for actual probe failures (Ollama unreachable AND the script can't function).
+4. **Probe timeout matters.** Default 3 s is fine for cron (script runs in <1 s), but if you embed the probe in a longer agent loop, set 1–2 s so a slow Ollama doesn't stall the agent.
+5. **Env-var overrides are not optional.** Always expose `OLLAMA_URL`, `MODEL`, `TIMEOUT` as env overrides so the script works on different hosts (test box, prod box, WSL) without code edits.
+
+**Verify all three branches before declaring done:**
+
+| Branch | Expected | Marker written? | Exit |
+|---|---|---|---|
+| Ollama up + model present | log "marker written" | yes | 0 |
+| Ollama up + wrong model | log "model 'X' not in /api/tags (have: …)" | no | 0 |
+| Ollama unreachable | log "ollama unreachable at …" | no | 0 |
+
+For the concrete recipe + gotchas expanded into copy-paste form, see
+`references/ollama-health-probe.md`.
 
 For user-initiated tasks (Pattern A), the agent is encouraged to:
 - After a task succeeds, call `record_success("<descriptive-id>")` to
@@ -162,6 +263,7 @@ For user-initiated tasks (Pattern A), the agent is encouraged to:
 | `$HERMES_HOME/skills/model-router/compare.py` | Embedding + text similarity |
 | `$HERMES_HOME/skills/model-router/router.py` | Table CRUD + log appender |
 | `$HERMES_HOME/skills/model-router/SKILL.md` | This file |
+| `$HERMES_HOME/skills/model-router/references/rewire-script-to-ollama.md` | Step-by-step recipe for porting a cloud-gated script (e.g. `GEMINI_API_KEY`-gated) to local Ollama, including the presence-gate vs warmup-ping vs active-invocation decision and the `/api/tags` + `/api/generate` snippets. Load this whenever the user asks to "use the local LLM" for a script that previously gated on a remote API key. |
 
 ## Environment variables
 

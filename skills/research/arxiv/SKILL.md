@@ -37,7 +37,7 @@ curl -s "https://export.arxiv.org/api/query?search_query=all:GRPO+reinforcement+
 ### Clean output (parse XML to readable format)
 
 ```bash
-curl -s "https://export.arxiv.org/api/query?search_query=all:GRPO+reinforcement+learning&max_results=5&sortBy=submittedDate&sortOrder=descending" | python3 -c "
+curl -s "https://export.arxiv.org/api/query?search_query=all:GRPO+reinforcement+learning&max_results=5&sortBy=submittedDate&sortOrder=descending" | python -c "
 import sys, xml.etree.ElementTree as ET
 ns = {'a': 'http://www.w3.org/2005/Atom'}
 root = ET.parse(sys.stdin).getroot()
@@ -57,7 +57,15 @@ for i, entry in enumerate(root.findall('a:entry', ns)):
 "
 ```
 
-## Search Query Syntax
+### Search Query Syntax
+
+#### Windows Parsing Workaround (no Python)
+When running in Windows Git Bash/MSYS, use POSIX commands to parse XML without installing Python:
+```bash
+# Parse titles and IDs from API response
+curl -s 'https://export.arxiv.org/api/query?search_query=all:agent' | \ 
+  grep '<a:title>' | sed 's/\n//g' | cut -d '>' -f2 | cut -d '<' -f1
+```
 
 | Prefix | Searches | Example |
 |--------|----------|---------|
@@ -197,7 +205,7 @@ arXiv doesn't provide citation data or recommendations. Use the **Semantic Schol
 
 ```bash
 # By arXiv ID
-curl -s "https://api.semanticscholar.org/graph/v1/paper/arXiv:2402.03300?fields=title,authors,citationCount,referenceCount,influentialCitationCount,year,abstract" | python3 -m json.tool
+curl -s "https://api.semanticscholar.org/graph/v1/paper/arXiv:2402.03300?fields=title,authors,citationCount,referenceCount,influentialCitationCount,year,abstract" | python -m json.tool
 
 # By Semantic Scholar paper ID or DOI
 curl -s "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1234/example?fields=title,citationCount"
@@ -206,7 +214,7 @@ curl -s "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1234/example?fiel
 ### Get citations OF a paper (who cited it)
 
 ```bash
-curl -s "https://api.semanticscholar.org/graph/v1/paper/arXiv:2402.03300/citations?fields=title,authors,year,citationCount&limit=10" | python3 -m json.tool
+curl -s "https://api.semanticscholar.org/graph/v1/paper/arXiv:2402.03300/citations?fields=title,authors,year,citationCount&limit=10" | python -m json.tool
 ```
 
 ### Get references FROM a paper (what it cites)
@@ -218,7 +226,7 @@ curl -s "https://api.semanticscholar.org/graph/v1/paper/arXiv:2402.03300/referen
 ### Search papers (alternative to arXiv search, returns JSON)
 
 ```bash
-curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=GRPO+reinforcement+learning&limit=5&fields=title,authors,year,citationCount,externalIds" | python3 -m json.tool
+curl -s "https://api.semanticscholar.org/graph/v1/paper/search?query=GRPO+reinforcement+learning&limit=5&fields=title,authors,year,citationCount,externalIds" | python -m json.tool
 ```
 
 ### Get paper recommendations
@@ -251,6 +259,8 @@ curl -s "https://api.semanticscholar.org/graph/v1/author/search?query=Yann+LeCun
 6. **Get recommendations**: POST to Semantic Scholar recommendations endpoint
 7. **Track authors**: `curl -s "https://api.semanticscholar.org/graph/v1/author/search?query=NAME"`
 
+**For automated/nightly research workflows**, see `references/nightly-research-patterns.md` for time-bounded research techniques, agent-specific query patterns, and platform workarounds.
+
 ## Rate Limits
 
 | API | Rate | Auth |
@@ -258,7 +268,47 @@ curl -s "https://api.semanticscholar.org/graph/v1/author/search?query=Yann+LeCun
 | arXiv | ~1 req / 3 seconds | None needed |
 | Semantic Scholar | 1 req / second | None (100/sec with API key) |
 
-## Notes
+## Pitfalls and Platform Notes
+
+### Windows/MSYS Compatibility
+
+On Windows with MSYS/git-bash, `python3` path resolution can fail with "Python was not found" errors. **Always check `which python3` first**, then fall back to simpler approaches:
+
+```bash
+# Check python availability
+which python3
+
+# If python3 fails, use raw curl + grep/sed instead of the parsing script
+curl -s "https://export.arxiv.org/api/query?search_query=all:agent+memory&max_results=5" | grep -E "(title>|id>|published>)" | sed 's/<[^>]*>//g'
+```
+
+### Agent Research Query Patterns
+
+For agentic AI research, use these proven search patterns:
+
+```bash
+# Core agentic topics
+search_query=all:agent+memory+architecture+OR+all:context+window+OR+all:prompt+caching
+search_query=all:multi-agent+OR+all:agent+orchestration+OR+all:model+routing
+search_query=ti:GUI+agent+OR+ti:multimodal+web+agent+OR+ti:autonomous+agent
+
+# Recent submissions (last 24-48h)
+search_query=all:agent+framework&sortBy=submittedDate&sortOrder=descending&max_results=15
+
+# Categories for agent research
+cat:cs.AI OR cat:cs.MA OR cat:cs.CL OR cat:cs.LG
+```
+
+### Time-Bounded Research Workflows
+
+For scheduled/cron research sessions with 3-minute time limits:
+
+1. **Start with date checks**: Always `date +%Y-%m-%d` to get current Pacific date
+2. **Limit paper counts**: Max 10-15 papers per tick to avoid timeouts  
+3. **Abstract-only approach**: Read abstracts, NOT full PDFs in time-bounded contexts
+4. **Fallback strategies**: If web_extract fails, don't block—move to next source
+
+## General Notes
 
 - arXiv returns Atom XML — use the helper script or parsing snippet for clean output
 - Semantic Scholar returns JSON — pipe through `python3 -m json.tool` for readability
@@ -273,6 +323,16 @@ curl -s "https://api.semanticscholar.org/graph/v1/author/search?query=Yann+LeCun
 - `arxiv.org/abs/1706.03762v1` points to a **specific** immutable version
 - When generating citations, preserve the version suffix you actually read to prevent citation drift (a later version may substantially change content)
 - The API `<id>` field returns the versioned URL (e.g., `http://arxiv.org/abs/1706.03762v7`)
+
+## Pitfalls
+
+### Python Command Cross-Platform Compatibility
+- On Windows MSYS/Git Bash: use `python` not `python3` 
+- On Linux/macOS: typically `python3` is correct
+- Test both when available, or check with `which python3 && python3 --version`
+
+### Date Filtering and Rate Limits
+For agent research patterns and advanced filtering techniques, see `references/agent-research-patterns.md`.
 
 ## Withdrawn Papers
 

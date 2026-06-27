@@ -74,3 +74,51 @@ After fetching the transcript, format it based on what the user asks for:
 - **Private/unavailable video**: relay the error and ask the user to verify the URL.
 - **No matching language**: retry without `--language` to fetch any available transcript, then note the actual language to the user.
 - **Dependency missing**: run `uv pip install youtube-transcript-api` and retry.
+- **`ParseError: no element found: line 1, column 0`** (or any `xml.etree.ElementTree.ParseError`): the API is being blocked — IP binding, rate limit, or YouTube anti-bot. **Do not** conclude the video has no captions. Fall through to the `yt-dlp` recipe below; the video almost certainly has captions, the API just can't reach them.
+
+## yt-dlp fallback when the API is blocked
+
+`youtube-transcript-api` makes a direct HTTPS call to YouTube's `timedtext` endpoint and is frequently blocked. `yt-dlp` takes a different path — it renders the watch page and pulls the `captionTracks` URL out of the embedded JSON, which works in more environments and from more IP ranges.
+
+```bash
+# Skip video download, fetch both auto-generated and manual subs in best available format
+yt-dlp --skip-download \
+  --write-auto-subs --write-subs \
+  --sub-format "vtt/srv3/srv2/srv1/best" \
+  --sub-langs "en,en-US,en-orig" \
+  -o "/tmp/yt_%(id)s.%(ext)s" \
+  "https://www.youtube.com/watch?v=VIDEO_ID"
+```
+
+`yt-dlp` writes one VTT (or SRV3) per language under the output template. To read them:
+
+```bash
+uv pip install webvtt-py
+python -c "
+import webvtt
+caps = webvtt.read('/tmp/yt_VIDEO_ID.en-US.vtt')   # manual captions if present
+for c in caps:
+    print(f'[{c.start} -> {c.end}] {c.text}')
+"
+```
+
+Picking the right track when both are present: `en-US.vtt` (or any `xx-XX.vtt`) is the human-uploaded track — usually shorter, tighter, and cleaner. `en.vtt` and `en-orig.vtt` are auto-generated ASR — larger files, more word-level drift, but always present. Prefer the human track when both exist; fall back to ASR when it doesn't.
+
+The `yt-dlp` recipe is also useful when `uv run` itself is broken on Windows (the venv `uv` creates is in a path with a space, which trips some Python finders). `yt-dlp` from the system Python (`pip install yt-dlp`) sidesteps the whole venv problem.
+
+## Channel discovery from a handle (no API key, no browser)
+
+If you have a `@handle` and need the `UC...` channel ID for the RSS feed:
+
+```bash
+curl -s -A "Mozilla/5.0" "https://www.youtube.com/@Handle" -L \
+  | grep -oE '"externalId":"[A-Za-z0-9_-]+"' | head -1
+```
+
+The `externalId` value (e.g. `"UCU45D-fmlarTp7R_bdYY24g"`) is the channel ID. Then:
+
+```bash
+curl -s -A "Mozilla/5.0" "https://www.youtube.com/feeds/videos.xml?channel_id=UCU45D-fmlarTp7R_bdYY24g"
+```
+
+This is the same recipe the `daily-news-digest` orchestrator uses — it works in a fresh shell, needs no auth, and the response is 40-60KB of clean XML.
