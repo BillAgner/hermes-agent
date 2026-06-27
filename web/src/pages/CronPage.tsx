@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { Clock, Pause, Pencil, Play, Trash2, X, Zap } from "lucide-react";
+import { ChevronDown, Clock, FileText, Pause, Pencil, Play, Trash2, X, Zap } from "lucide-react";
 import { Badge } from "@nous-research/ui/ui/components/badge";
 import { Button } from "@nous-research/ui/ui/components/button";
 import { Select, SelectOption } from "@nous-research/ui/ui/components/select";
 import { Spinner } from "@nous-research/ui/ui/components/spinner";
 import { H2 } from "@nous-research/ui/ui/components/typography/h2";
 import { api } from "@/lib/api";
-import type { CronJob, CronDeliveryTarget, ProfileInfo, SkillInfo } from "@/lib/api";
+import type { CronJob, CronDeliveryTarget, ProfileInfo, SkillInfo, CronRunOutput, CronRunSession } from "@/lib/api";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import {
   DEFAULT_SCHEDULE_STATE,
@@ -32,6 +32,16 @@ import { PluginSlot } from "@/plugins";
 import { Segmented } from "@nous-research/ui/ui/components/segmented";
 import { AutomationBlueprints } from "@/components/AutomationBlueprints";
 import { cn, themedBody } from "@/lib/utils";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@nous-research/ui/ui/components/dialog";
+import { Markdown } from "@/components/Markdown";
 
 function formatTime(iso?: string | null): string {
   if (!iso) return "—";
@@ -152,6 +162,96 @@ function getJobProfile(job: CronJob): string {
   return asText(job.profile) || asText(job.profile_name) || "default";
 }
 
+function formatRunStartedAt(epochMs: number | null | undefined): string {
+  if (!epochMs) return "?";
+  const ms = epochMs < 1e12 ? epochMs * 1000 : epochMs;
+  const d = new Date(ms);
+  if (Number.isNaN(d.getTime())) return "?";
+  return d.toLocaleString();
+}
+
+function runStatusLabel(run: CronRunSession): string {
+  if (run.is_active) return "running";
+  if (run.ended_at) return "done";
+  return "unknown";
+}
+
+function runStatusTone(label: string): "success" | "warning" | "secondary" {
+  if (label === "running") return "warning";
+  if (label === "done") return "success";
+  return "secondary";
+}
+
+function CronRunHistory({
+  jobId,
+  profile,
+  limit = 5,
+  onViewOutput,
+}: {
+  jobId: string;
+  profile: string;
+  limit?: number;
+  onViewOutput: (sessionId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [runs, setRuns] = useState<CronRunSession[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const ensureLoaded = useCallback(() => {
+    if (runs !== null || loading) return;
+    setLoading(true);
+    api.listCronRuns(jobId, profile, limit)
+      .then((res) => { setRuns(res.runs || []); setError(null); })
+      .catch((e: unknown) => { setRuns([]); setError(e instanceof Error ? e.message : String(e)); })
+      .finally(() => setLoading(false));
+  }, [jobId, profile, limit, runs, loading]);
+
+  const summaryLabel = runs
+    ? runs.length === 0 ? "no runs yet" : `${runs.length} run${runs.length === 1 ? "" : "s"}`
+    : "view recent runs";
+
+  return (
+    <div className="border-t border-border/40 px-4 py-2">
+      <button type="button" onClick={() => { const next = !open; setOpen(next); if (next) ensureLoaded(); }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" aria-expanded={open}>
+        <ChevronDown className={cn("h-3 w-3 transition-transform", open && "rotate-180")} />
+        <span>{open ? "hide recent runs" : summaryLabel}</span>
+      </button>
+      {open && (
+        <div className="mt-2 space-y-1">
+          {loading && <p className="text-xs text-muted-foreground">loading...</p>}
+          {error && <p className="text-xs text-destructive">failed: {error}</p>}
+          {runs && runs.length === 0 && !loading && !error && <p className="text-xs text-muted-foreground">no runs recorded yet</p>}
+          {runs && runs.length > 0 && (
+            <ul className="text-xs space-y-1">
+              {runs.map((run) => {
+                const status = runStatusLabel(run);
+                return (
+                  <li key={run.id} className="flex items-center gap-2 font-mono-ui">
+                    <Badge tone={runStatusTone(status)}>{status}</Badge>
+                    <span className="text-muted-foreground">{formatRunStartedAt(run.started_at)}</span>
+                    <span className="truncate flex-1 text-foreground/80" title={run.id}>{run.id}</span>
+                    <Button
+                      ghost
+                      size="sm"
+                      onClick={() => onViewOutput(run.id)}
+                      className="h-6 px-2 text-xs gap-1 shrink-0"
+                      title="View output report"
+                    >
+                      <FileText className="h-3 w-3" />
+                      view
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function getJobKey(job: CronJob): string {
   return `${getJobProfile(job)}:${job.id}`;
 }
@@ -173,6 +273,70 @@ const STATUS_TONE: Record<string, "success" | "warning" | "destructive"> = {
   error: "destructive",
   completed: "destructive",
 };
+
+function CronRunOutputDialog({
+  open,
+  sessionId,
+  onClose,
+}: {
+  open: boolean;
+  sessionId: string | null;
+  onClose: () => void;
+}) {
+  const [output, setOutput] = useState<CronRunOutput | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || !sessionId) return;
+    setLoading(true);
+    setError(null);
+    setOutput(null);
+    api
+      .getCronRunOutput(sessionId)
+      .then((res) => setOutput(res))
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : String(e)),
+      )
+      .finally(() => setLoading(false));
+  }, [open, sessionId]);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-mono-ui text-sm">
+            {sessionId || "run output"}
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
+            {output
+              ? `${output.matched_file}  ·  ${(output.size / 1024).toFixed(1)} KB`
+              : "loading..."}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-4 py-3 border-t border-border/40 min-h-[200px]">
+          {loading && (
+            <p className="text-sm text-muted-foreground">loading report...</p>
+          )}
+          {error && (
+            <p className="text-sm text-destructive">failed: {error}</p>
+          )}
+          {output && (
+            <Markdown content={output.content} />
+          )}
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button outlined size="sm">
+              Close
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export default function CronPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
@@ -254,6 +418,8 @@ export default function CronPage() {
     setEditDeliver(asText(job.deliver) || "local");
     setEditSkills(Array.isArray(job.skills) ? job.skills.filter(Boolean) : []);
   }, []);
+
+  const [viewingRunId, setViewingRunId] = useState<string | null>(null);
 
   const loadJobs = useCallback(() => {
     api
@@ -451,6 +617,16 @@ export default function CronPage() {
         "success",
       );
       loadJobs();
+      // The gateway tick loop fires every 60s, so the triggered run lands
+      // sometime in the next ~70s. Reload the list twice — once shortly
+      // after to pick up the tick firing, once after the typical run
+      // window so the run-history section has something to show. Both
+      // timers fire on the page mount regardless of unmount; the worst
+      // case is a single stale-state warning on navigation, not a crash.
+      const TICK_RELOAD_MS = 5_000;
+      const RUN_RELOAD_MS = 65_000;
+      setTimeout(loadJobs, TICK_RELOAD_MS);
+      setTimeout(loadJobs, RUN_RELOAD_MS);
     } catch (e) {
       showToast(`${t.status.error}: ${e}`, "error");
     }
@@ -905,6 +1081,7 @@ export default function CronPage() {
                   </Button>
                 </div>
               </CardContent>
+              <CronRunHistory jobId={job.id} profile={profile} limit={5} onViewOutput={setViewingRunId} />
             </Card>
           );
         })}
@@ -912,6 +1089,11 @@ export default function CronPage() {
       )}
 
       <PluginSlot name="cron:bottom" />
+      <CronRunOutputDialog
+        open={viewingRunId !== null}
+        sessionId={viewingRunId}
+        onClose={() => setViewingRunId(null)}
+      />
     </div>
   );
 }

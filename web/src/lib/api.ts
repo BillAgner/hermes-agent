@@ -515,6 +515,27 @@ export const api = {
   // Cron jobs
   getCronJobs: (profile = "all") =>
     fetchJSON<CronJob[]>(`/api/cron/jobs?profile=${encodeURIComponent(profile)}`),
+  listCronRuns: (
+    jobId: string,
+    profile = "default",
+    limit = 20,
+  ) =>
+    fetchJSON<{ runs: CronRunSession[]; limit: number }>(
+      `/api/cron/jobs/${encodeURIComponent(jobId)}/runs?profile=${encodeURIComponent(profile)}&limit=${encodeURIComponent(limit)}`,
+    ),
+  getCronRunOutput: (sessionId: string, profile = "default") =>
+    fetchJSON<{
+      session_id: string;
+      job_id: string;
+      profile: string;
+      path: string;
+      matched_file: string;
+      content: string;
+      mtime: number;
+      size: number;
+    }>(
+      `/api/cron/runs/${encodeURIComponent(sessionId)}/output?profile=${encodeURIComponent(profile)}`,
+    ),
   getCronDeliveryTargets: () =>
     fetchJSON<{ targets: CronDeliveryTarget[] }>("/api/cron/delivery-targets"),
   createCronJob: (job: { prompt: string; schedule: string; name?: string; deliver?: string; skills?: string[] }, profile = "default") =>
@@ -1901,6 +1922,41 @@ export interface CronJob {
   last_run_at?: string | null;
   next_run_at?: string | null;
   last_error?: string | null;
+  last_status?: string | null;
+  last_delivery_error?: string | null;
+  repeat?: { times?: number | null; completed?: number | null } | null;
+  no_agent?: boolean | null;
+  workdir?: string | null;
+}
+
+// Cron run session row — same shape as the /api/sessions SessionInfo plus
+// the is_active / archived flags that /api/cron/jobs/<id>/runs decorates.
+// Bounded by SessionDB.list_cron_job_runs (id-prefix range scan), so the
+// response cost scales with --limit, not total cron history.
+export interface CronRunSession {
+  id: string;
+  title?: string | null;
+  source?: string | null;
+  started_at?: number | null;
+  ended_at?: number | null;
+  last_active?: number | null;
+  preview?: string | null;
+  archived?: boolean;
+  is_active?: boolean;
+  profile?: string | null;
+}
+
+// Response from GET /api/cron/runs/<session_id>/output — the markdown
+// report the cron scheduler wrote to <HERMES_HOME>/cron/output/<job_id>/.
+export interface CronRunOutput {
+  session_id: string;
+  job_id: string;
+  profile: string;
+  path: string;
+  matched_file: string;
+  content: string;
+  mtime: number;
+  size: number;
 }
 
 export interface CronDeliveryTarget {

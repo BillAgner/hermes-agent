@@ -135,6 +135,31 @@ def build_cron_parser(subparsers, *, cmd_cron: Callable) -> None:
         help="Absolute path for the job to run from (injects AGENTS.md etc. and sets terminal cwd). Pass empty string to clear.",
     )
 
+    # cron show — print full job record + recent runs (default 5)
+    cron_show = cron_subparsers.add_parser(
+        "show", help="Show full job record and its recent runs"
+    )
+    cron_show.add_argument("job_id", help="Job ID or human-friendly name")
+    cron_show.add_argument(
+        "--limit",
+        type=int,
+        default=5,
+        help="How many recent runs to include (default 5, max 100)",
+    )
+
+    # cron runs — print just the run history, newest first
+    cron_runs = cron_subparsers.add_parser(
+        "runs",
+        help="List run history for a cron job (newest first)",
+    )
+    cron_runs.add_argument("job_id", help="Job ID or human-friendly name")
+    cron_runs.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Max number of runs to list (default 20, max 100)",
+    )
+
     # lifecycle actions
     cron_pause = cron_subparsers.add_parser("pause", help="Pause a scheduled job")
     cron_pause.add_argument("job_id", help="Job ID to pause")

@@ -57,6 +57,19 @@ def _cron_api(**kwargs):
     return json.loads(cronjob_tool(**kwargs))
 
 
+def truncate_text(value: str, max_length: int) -> str:
+    """Truncate *value* to *max_length* characters, appending '...' when cut.
+
+    Local helper — Python port of the SPA's CronPage truncateText; reused by
+    cron_show / cron_runs previews so long agent outputs don't wrap terminals.
+    """
+    if not value:
+        return ""
+    if len(value) <= max_length:
+        return value
+    return value[:max_length] + "..."
+
+
 def cron_list(show_all: bool = False):
     """List all scheduled jobs."""
     from cron.jobs import list_jobs
@@ -317,6 +330,193 @@ def _job_action(action: str, job_id: str, success_verb: str) -> int:
     return 0
 
 
+def _resolve_cron_run_sessions(job_id: str, limit: int) -> list:
+    """Return run sessions for *job_id* (canonical or name), newest first.
+
+    Uses ``SessionDB.list_cron_job_runs`` directly — same backend as the
+    dashboard's ``/api/cron/jobs/<id>/runs`` endpoint, so CLI and dashboard
+    show identical history. Job id is resolved to its canonical id first so
+    looking up by name (``hermes cron runs "Daily Report"``) returns the same
+    rows as looking up by id.
+
+    Returns a list of session dicts in the same shape as ``list_sessions_rich``.
+    Returns an empty list when the job is unknown — callers should validate
+    via ``resolve_job_ref`` separately to distinguish "no runs yet" from
+    "job not found".
+    """
+    from cron.jobs import AmbiguousJobReference, resolve_job_ref
+    from hermes_state import SessionDB
+
+    try:
+        job = resolve_job_ref(job_id)
+    except AmbiguousJobReference:
+        return []
+    if not job:
+        return []
+    canonical = str(job.get("id") or job_id)
+
+    db = SessionDB(read_only=True)
+    try:
+        return db.list_cron_job_runs(canonical, limit=max(1, min(int(limit), 100)), offset=0)
+    finally:
+        db.close()
+
+
+def _format_run_status(run: dict) -> str:
+    """Compact one-line status for a run session row."""
+    ended = run.get("ended_at")
+    if not ended:
+        return color("running", Colors.YELLOW)
+    # Cron sessions write a terminal status into the session metadata when
+    # the scheduler marks completion. Fall back to a present-ended indicator
+    # so we don't lie about success when metadata is missing.
+    meta = run.get("metadata") or {}
+    if isinstance(meta, str):
+        try:
+            meta = json.loads(meta)
+        except (TypeError, ValueError):
+            meta = {}
+    explicit = meta.get("status") if isinstance(meta, dict) else None
+    if explicit == "error":
+        return color("error", Colors.RED)
+    if explicit == "ok":
+        return color("ok", Colors.GREEN)
+    return color("done", Colors.CYAN)
+
+
+def _format_run_started_at(run: dict) -> str:
+    """Started-at timestamp as a compact local string, or '?' when missing."""
+    started = run.get("started_at")
+    if not started:
+        return "?"
+    try:
+        from datetime import datetime, timezone
+        dt = datetime.fromtimestamp(float(started), tz=timezone.utc).astimezone()
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError, OSError):
+        return str(started)
+
+
+def cron_show(job_id: str, runs_limit: int = 5) -> int:
+    """Show full job record + recent runs. ``runs_limit`` defaults to 5."""
+    from cron.jobs import AmbiguousJobReference, resolve_job_ref
+
+    try:
+        job = resolve_job_ref(job_id)
+    except AmbiguousJobReference as exc:
+        print(color(str(exc), Colors.RED))
+        for m in exc.matches:
+            print(f"  {m['id']}  (name: {m.get('name')!r})")
+        return 1
+    if not job:
+        print(color(f"Job not found: {job_id}", Colors.RED))
+        return 1
+
+    canonical_id = str(job.get("id") or job_id)
+
+    print()
+    print(color(f"┌─ Job: {canonical_id}", Colors.CYAN))
+    print(color("│", Colors.CYAN))
+    name = job.get("name") or "(unnamed)"
+    state = job.get("state") or ("scheduled" if job.get("enabled", True) else "paused")
+    schedule = job.get("schedule_display") or job.get("schedule", {}).get("value") or "?"
+    print(f"│  Name:      {name}")
+    print(f"│  State:     {state}")
+    print(f"│  Schedule:  {schedule}")
+    print(f"│  Next run:  {job.get('next_run_at', '?')}")
+    deliver = job.get("deliver") or ["local"]
+    if isinstance(deliver, str):
+        deliver = [deliver]
+    print(f"│  Deliver:   {', '.join(deliver)}")
+    skills = job.get("skills") or ([job["skill"]] if job.get("skill") else [])
+    if skills:
+        print(f"│  Skills:    {', '.join(skills)}")
+    if job.get("script"):
+        print(f"│  Script:    {job['script']}")
+    if job.get("no_agent"):
+        print(f"│  Mode:      {color('no-agent', Colors.DIM)}")
+    if job.get("workdir"):
+        print(f"│  Workdir:   {job['workdir']}")
+    last_status = job.get("last_status")
+    if last_status:
+        last_run = job.get("last_run_at", "?")
+        if last_status == "ok":
+            status_display = color("ok", Colors.GREEN)
+        else:
+            status_display = color(f"{last_status}: {job.get('last_error', '?')}", Colors.RED)
+        print(f"│  Last run:  {last_run}  {status_display}")
+    if job.get("last_delivery_error"):
+        print(f"│  {color('⚠ Delivery failed:', Colors.YELLOW)} {job['last_delivery_error']}")
+    print(color("│", Colors.CYAN))
+
+    runs = _resolve_cron_run_sessions(canonical_id, runs_limit)
+    print(color(f"├─ Recent runs (last {len(runs)}):", Colors.CYAN))
+    if not runs:
+        print(color("│  (none yet)", Colors.DIM))
+    else:
+        for run in runs:
+            print(
+                f"│  {_format_run_started_at(run)}  "
+                f"{_format_run_status(run).ljust(len('running'))}  "
+                f"{color(run.get('id', '?'), Colors.YELLOW)}"
+            )
+            preview = (run.get("preview") or "").strip()
+            if preview:
+                print(f"│      {truncate_text(preview, 80)}")
+    print(color("└─", Colors.CYAN))
+    print()
+    return 0
+
+
+def cron_runs(job_id: str, limit: int = 20) -> int:
+    """Print run history for *job_id* (canonical id or name)."""
+    from cron.jobs import AmbiguousJobReference, resolve_job_ref
+
+    try:
+        job = resolve_job_ref(job_id)
+    except AmbiguousJobReference as exc:
+        print(color(str(exc), Colors.RED))
+        for m in exc.matches:
+            print(f"  {m['id']}  (name: {m.get('name')!r})")
+        return 1
+    if not job:
+        print(color(f"Job not found: {job_id}", Colors.RED))
+        return 1
+
+    canonical_id = str(job.get("id") or job_id)
+    runs = _resolve_cron_run_sessions(canonical_id, limit)
+    if not runs:
+        print(color(f"No runs recorded yet for {canonical_id}.", Colors.DIM))
+        return 0
+
+    print()
+    print(color(f"Runs for {canonical_id} ({job.get('name') or '(unnamed)'}) — {len(runs)} shown:", Colors.CYAN))
+    print()
+    for run in runs:
+        started = _format_run_started_at(run)
+        status = _format_run_status(run)
+        session_id = run.get("id", "?")
+        ended = run.get("ended_at")
+        try:
+            from datetime import datetime, timezone
+            ended_str = (
+                datetime.fromtimestamp(float(ended), tz=timezone.utc)
+                .astimezone()
+                .strftime("%H:%M:%S")
+                if ended
+                else "—"
+            )
+        except (TypeError, ValueError, OSError):
+            ended_str = str(ended) if ended else "—"
+        print(f"  {color(started, Colors.CYAN)}  {status}  ended {ended_str}")
+        print(f"    session: {color(session_id, Colors.YELLOW)}")
+        preview = (run.get("preview") or "").strip()
+        if preview:
+            print(f"    preview: {truncate_text(preview, 80)}")
+        print()
+    return 0
+
+
 def cron_command(args):
     """Handle cron subcommands."""
     subcmd = getattr(args, 'cron_command', None)
@@ -340,6 +540,12 @@ def cron_command(args):
     if subcmd == "edit":
         return cron_edit(args)
 
+    if subcmd == "show":
+        return cron_show(args.job_id, runs_limit=getattr(args, "limit", 5))
+
+    if subcmd == "runs":
+        return cron_runs(args.job_id, limit=getattr(args, "limit", 20))
+
     if subcmd == "pause":
         return _job_action("pause", args.job_id, "Paused")
 
@@ -353,5 +559,5 @@ def cron_command(args):
         return _job_action("remove", args.job_id, "Removed")
 
     print(f"Unknown cron command: {subcmd}")
-    print("Usage: hermes cron [list|create|edit|pause|resume|run|remove|status|tick]")
+    print("Usage: hermes cron [list|create|edit|pause|resume|run|runs|remove|show|status|tick]")
     sys.exit(1)

@@ -7688,6 +7688,133 @@ async def list_cron_job_runs(job_id: str, profile: Optional[str] = None, limit: 
         db.close()
 
 
+@app.get("/api/cron/runs/{session_id}/output")
+async def get_cron_run_output(session_id: str, profile: Optional[str] = None):
+    """Return the markdown output file for a single cron run session.
+
+    Cron runs are stored as ordinary sessions with id
+    ``cron_<job_id>_<YYYYMMDD_HHMMSS>`` (see ``cron/scheduler.run_job``).
+    The matching output file is ``<HERMES_HOME>/cron/output/<job_id>/
+    <YYYY-MM-DD_HH-MM-SS>.md`` — but the file timestamp is taken at the
+    *end* of the run, not the start, so a literal id->filename map is
+    off by tens of seconds. Instead this endpoint finds the session via
+    ``SessionDB``, reads its ``ended_at``, and picks the output file
+    whose mtime matches that timestamp exactly.
+
+    Returns ``{session_id, job_id, profile, content, mtime, size,
+    matched_file}`` on success, 404 if the file is missing (e.g. the run
+    is still active or the output hasn't been flushed yet), or 400 on a
+    malformed session id. Job-id portion is validated via
+    ``cron.jobs._job_output_dir`` so a hostile session_id cannot escape
+    the cron output sandbox.
+    """
+    import re as _re
+    import time as _time
+    import os as _os
+    import importlib as _importlib
+    from pathlib import Path as _Path
+    from cron.jobs import _job_output_dir as _job_output_dir
+    from hermes_constants import get_hermes_home as _get_hermes_home
+
+    # Validate session_id shape: cron_<12hex>_<8digits>_<6digits>.
+    m = _re.fullmatch(r"cron_([0-9a-f]{12})_(\d{8}_\d{6})", session_id)
+    if not m:
+        raise HTTPException(status_code=400, detail="Malformed cron session id")
+    job_id = m.group(1)
+
+    # _job_output_dir validates job_id is a safe single path component;
+    # raises ValueError on path traversal / absolute / nested separators.
+    try:
+        _job_output_dir(job_id)  # validation only
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # Resolve which profile owns this session. Output files live under that
+    # profile's HERMES_HOME; fall back to the dashboard's HERMES_HOME.
+    selected = profile or _find_cron_job_profile(job_id) or "default"
+
+    # Per-profile: temporarily swap HERMES_HOME so OUTPUT_DIR resolves to
+    # the right base directory, then read.
+    saved_home = _os.environ.get("HERMES_HOME")
+    profiles_root = _Path(_get_hermes_home()).parent / "profiles"
+    candidate = profiles_root / selected
+    if selected != "default" and candidate.exists():
+        _os.environ["HERMES_HOME"] = str(candidate)
+    try:
+        import cron.jobs as _cron_jobs_mod
+        _importlib.reload(_cron_jobs_mod)
+        output_dir = _cron_jobs_mod.OUTPUT_DIR / job_id
+        # Load the session row to get ended_at for the mtime match.
+        db = _open_session_db_for_profile(selected)
+        try:
+            row = db.get_session(session_id)
+        finally:
+            db.close()
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unknown session id: {session_id}",
+            )
+        ended_at = row.get("ended_at")
+        started_at = row.get("started_at")
+        # Find the file whose mtime is the closest match to ended_at.
+        # Tolerate a small float-rounding window (1.5s) so the lookup is
+        # robust to scheduler jitter and clock drift between the DB and
+        # the filesystem.
+        matched_file = None
+        best_delta = None
+        if output_dir.exists():
+            candidates = list(output_dir.glob("*.md"))
+            for cand in candidates:
+                try:
+                    st = cand.stat()
+                except OSError:
+                    continue
+                if ended_at is None:
+                    # Active run: pick the latest file that landed after
+                    # started_at (best-effort — may be missing).
+                    if started_at and st.st_mtime + 1.0 < started_at:
+                        continue
+                    delta = abs(st.st_mtime - (_time.time() - 1))
+                else:
+                    delta = abs(st.st_mtime - ended_at)
+                if best_delta is None or delta < best_delta:
+                    best_delta = delta
+                    matched_file = cand
+        if matched_file is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No output file for {session_id} in {output_dir}",
+            )
+        output_file = matched_file
+    finally:
+        if saved_home is not None:
+            _os.environ["HERMES_HOME"] = saved_home
+        else:
+            _os.environ.pop("HERMES_HOME", None)
+        # Always restore the module to its pre-call state so subsequent
+        # requests see the original OUTPUT_DIR.
+        import cron.jobs as _cron_jobs_restore
+        _importlib.reload(_cron_jobs_restore)
+
+    try:
+        text = output_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to read output: {exc}")
+
+    stat = output_file.stat()
+    return {
+        "session_id": session_id,
+        "job_id": job_id,
+        "profile": selected,
+        "path": str(output_file),
+        "matched_file": str(output_file.name),
+        "content": text,
+        "mtime": stat.st_mtime,
+        "size": stat.st_size,
+    }
+
+
 @app.post("/api/cron/jobs")
 async def create_cron_job(body: CronJobCreate, profile: str = "default"):
     try:
